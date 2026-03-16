@@ -5,7 +5,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="lv">
       <head>
-        <meta httpEquiv="refresh" content="60" />
+        <meta httpEquiv="refresh" content="300" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes liveBlink{0%,100%{opacity:1}50%{opacity:0.3}}
@@ -26,6 +26,15 @@ export default function RootLayout({ children }) {
           .count-badge{animation:countPulse 2s ease-in-out infinite;display:inline-block}
           .travel-badge{animation:travelGlow 2.5s ease-in-out infinite}
           .arrow-bounce{animation:arrowBounce 1.5s ease-in-out infinite;display:inline-block}
+        `}} />
+        <script dangerouslySetInnerHTML={{ __html: `
+          setInterval(function(){
+            var el = document.getElementById('clock');
+            if(el){
+              var now = new Date().toLocaleString('lv-LV',{timeZone:'Europe/Riga',hour:'2-digit',minute:'2-digit',hour12:false});
+              el.textContent = now;
+            }
+          }, 60000);
         `}} />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', background: '#1c1c1e' }}>
