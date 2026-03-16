@@ -24,13 +24,33 @@ const C = {
   blue: '#0a84ff', green: '#30d158', red: '#ff375f', orange: '#ff9f0a', purple: '#bf5af2', teal: '#64d2ff',
 };
 
+function generateBubbleCSS(prefix, count, durPerItem) {
+  if (count === 0) return '';
+  const cycle = count * durPerItem;
+  let css = '';
+  for (let i = 0; i < count; i++) {
+    const s1 = ((i * durPerItem) / cycle * 100).toFixed(2);
+    const s2 = ((i * durPerItem + 0.6) / cycle * 100).toFixed(2);
+    const e2 = (((i + 1) * durPerItem - 0.6) / cycle * 100).toFixed(2);
+    const e1 = (((i + 1) * durPerItem) / cycle * 100).toFixed(2);
+    css += `
+      @keyframes ${prefix}${i}{0%,${s1}%{max-height:0;opacity:0;padding:0 12px;margin-top:0}${s2}%{max-height:100px;opacity:1;padding:8px 12px;margin-top:5px}${e2}%{max-height:100px;opacity:1;padding:8px 12px;margin-top:5px}${e1}%,100%{max-height:0;opacity:0;padding:0 12px;margin-top:0}}
+      .${prefix}${i}{animation:${prefix}${i} ${cycle}s ease-in-out infinite;overflow:hidden}
+    `;
+  }
+  return css;
+}
+
 export default async function DashboardPage() {
   const data = await getDashboardData();
   const time = formatRigaTime();
   const dateStr = formatRigaDate();
   const isLive = data.source?.includes('live');
-  const emails = data.emailsRecent || [];
-  const oldEmails = data.emailsOld || [];
+  const emails = (data.emailsRecent || []).slice(0, 10);
+  const oldEmails = (data.emailsOld || []).slice(0, 15);
+
+  // Dinamiski ģenerējam animācijas pēc reālā skaita
+  const bubbleCSS = generateBubbleCSS('exB', emails.length, 8) + generateBubbleCSS('exO', oldEmails.length, 8);
 
   return (
     <div style={{
@@ -38,6 +58,9 @@ export default async function DashboardPage() {
       fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
       background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
+
+      {/* Dinamiskas bubble animācijas */}
+      <style dangerouslySetInnerHTML={{ __html: bubbleCSS }} />
 
       {/* ══ TOP BAR ══ */}
       <div style={{
@@ -118,9 +141,8 @@ export default async function DashboardPage() {
               padding: `${1*S}px ${6*S}px`, borderRadius: 20*S, fontWeight: 700,
             }}>{emails.length}</span>
           </div>
-
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px`, overflow: 'hidden' }}>
-            {emails.slice(0, 10).map((email, i) => {
+            {emails.map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
                 <div key={i}>
@@ -140,7 +162,7 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <ClaudeBubble text={email.suggestion} cls={`expand-bubble-${i}`} s={S} />
+                  <ClaudeBubble text={email.suggestion} cls={`exB${i}`} s={S} />
                 </div>
               );
             })}
@@ -155,7 +177,7 @@ export default async function DashboardPage() {
           <Sec t="Vecāki" s={S} />
           {oldEmails.length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu</div>}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px`, overflow: 'hidden' }}>
-            {oldEmails.slice(0, 15).map((email, i) => {
+            {oldEmails.map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
                 <div key={i}>
@@ -173,7 +195,7 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <ClaudeBubble text={email.suggestion} cls={`expand-old-${i}`} s={S} />
+                  <ClaudeBubble text={email.suggestion} cls={`exO${i}`} s={S} />
                 </div>
               );
             })}
@@ -242,23 +264,17 @@ export default async function DashboardPage() {
   );
 }
 
-// ═══ KOMPONENTES ═══
-
 function Sec({ t, s, noM, c }) {
   return <div style={{ fontSize: 6*s, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, color: c || 'rgba(255,255,255,0.35)', marginBottom: noM ? 0 : 3*s }}>{t}</div>;
 }
-
 function Pill({ t, c, s }) {
   return <span style={{ fontSize: 5*s, padding: `${1*s}px ${5*s}px`, borderRadius: 20*s, fontWeight: 600, background: `${c}20`, color: c }}>{t}</span>;
 }
-
 function ClaudeBubble({ text, cls, s }) {
   return (
     <div className={cls} style={{
-      background: 'rgba(48,209,88,0.15)',
-      border: '1px solid rgba(48,209,88,0.3)',
-      borderRadius: 8*s,
-      maxHeight: 0, opacity: 0, overflow: 'hidden',
+      background: 'rgba(48,209,88,0.15)', border: '1px solid rgba(48,209,88,0.3)',
+      borderRadius: 8*s, maxHeight: 0, opacity: 0, overflow: 'hidden',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 3*s, marginBottom: 1*s }}>
         <span style={{ fontSize: 4.5*s, color: '#30d158', fontWeight: 700 }}>Claude</span>
