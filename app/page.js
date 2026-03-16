@@ -69,7 +69,7 @@ export default async function DashboardPage() {
         borderBottom: `1px solid ${C.border}`, flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10*S }}>
-          <span style={{ fontSize: 20*S, fontWeight: 700, color: C.text, letterSpacing: -1 }}>{time}</span>
+          <span id="clock" style={{ fontSize: 20*S, fontWeight: 700, color: C.text, letterSpacing: -1 }}>{time}</span>
           <span style={{ fontSize: 7*S, color: C.text3, fontWeight: 500 }}>{dateStr}</span>
           <span className="live-badge" style={{
             fontSize: 6*S, color: isLive ? C.green : C.red, fontWeight: 600,
