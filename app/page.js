@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* ══ COL 2: JAUNĀKIE E-PASTI + CLAUDE BURBULIS ZEM KATRA ══ */}
+        {/* ══ COL 2: JAUNĀKIE E-PASTI + CLAUDE ZEM KATRA ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px ${5*S}px ${6*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -118,11 +118,11 @@ export default async function DashboardPage() {
             }}>{emails.length}</span>
           </div>
 
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px` }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px`, overflow: 'hidden' }}>
             {emails.slice(0, 10).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
-                <div key={i} style={{ position: 'relative' }}>
+                <div key={i}>
                   {/* E-pasta kartīte */}
                   <div className="email-card" style={{
                     background: C.card, borderRadius: 8*S,
@@ -142,24 +142,19 @@ export default async function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Claude burbulis — zem šī e-pasta, parādās tikai uz 10s */}
-                  <div className={`slide-bubble-${i}`} style={{
-                    position: 'absolute', left: 0, right: 0, top: '100%',
-                    zIndex: 20, opacity: 0,
+                  {/* Claude burbulis — zem e-pasta, izplešas un sabīda pārējos */}
+                  <div className={`expand-bubble-${i}`} style={{
+                    background: 'rgba(48,209,88,0.15)',
+                    border: '1px solid rgba(48,209,88,0.3)',
+                    borderRadius: 8*S,
+                    maxHeight: 0, opacity: 0, overflow: 'hidden',
                   }}>
-                    <div style={{
-                      background: 'rgba(48,209,88,0.15)',
-                      border: '1px solid rgba(48,209,88,0.3)',
-                      borderRadius: 8*S, padding: `${3*S}px ${5*S}px`,
-                      marginTop: 1*S,
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 3*S, marginBottom: 1*S }}>
-                        <span style={{ fontSize: 4.5*S, color: C.green, fontWeight: 700, letterSpacing: 0.5 }}>Claude</span>
-                        <span className="arrow-bounce" style={{ fontSize: 5*S, color: C.green }}>→</span>
-                      </div>
-                      <div style={{ fontSize: 5.5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
-                        {email.suggestion || 'Izlasi un izlemj'}
-                      </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3*S, marginBottom: 1*S }}>
+                      <span style={{ fontSize: 4.5*S, color: C.green, fontWeight: 700 }}>Claude</span>
+                      <span className="arrow-bounce" style={{ fontSize: 5*S, color: C.green }}>→</span>
+                    </div>
+                    <div style={{ fontSize: 5.5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
+                      {email.suggestion || 'Izlasi un izlemj'}
                     </div>
                   </div>
                 </div>
@@ -168,7 +163,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* ══ COL 3:  VECĀKI — 15 ══ */}
+        {/* ══ COL 3: VAKARDIENAS UN VECĀKI ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
