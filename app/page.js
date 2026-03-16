@@ -30,6 +30,7 @@ export default async function DashboardPage() {
   const dateStr = formatRigaDate();
   const isLive = data.source?.includes('live');
   const emails = data.emailsRecent || [];
+  const oldEmails = data.emailsOld || [];
 
   return (
     <div style={{
@@ -105,7 +106,7 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* ══ COL 2: JAUNĀKIE E-PASTI + CLAUDE ZEM KATRA ══ */}
+        {/* ══ COL 2: JAUNĀKIE ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px ${5*S}px ${6*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -123,12 +124,10 @@ export default async function DashboardPage() {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
                 <div key={i}>
-                  {/* E-pasta kartīte */}
                   <div className="email-card" style={{
-                    background: C.card, borderRadius: 8*S,
-                    padding: `${3*S}px ${5*S}px`,
+                    background: C.card, borderRadius: 8*S, padding: `${3*S}px ${5*S}px`,
                     borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
-                    animationDelay: `${i * 0.06}s`,
+                    animationDelay: `${i*0.06}s`,
                   }}>
                     <div style={{ fontSize: 4.5*S, color: C.text3, marginBottom: 0.5*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -141,52 +140,40 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Claude burbulis — zem e-pasta, izplešas un sabīda pārējos */}
-                  <div className={`expand-bubble-${i}`} style={{
-                    background: 'rgba(48,209,88,0.15)',
-                    border: '1px solid rgba(48,209,88,0.3)',
-                    borderRadius: 8*S,
-                    maxHeight: 0, opacity: 0, overflow: 'hidden',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3*S, marginBottom: 1*S }}>
-                      <span style={{ fontSize: 4.5*S, color: C.green, fontWeight: 700 }}>Claude</span>
-                      <span className="arrow-bounce" style={{ fontSize: 5*S, color: C.green }}>→</span>
-                    </div>
-                    <div style={{ fontSize: 5.5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
-                      {email.suggestion || 'Izlasi un izlemj'}
-                    </div>
-                  </div>
+                  <ClaudeBubble text={email.suggestion} cls={`expand-bubble-${i}`} s={S} />
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* ══ COL 3: VAKARDIENAS UN VECĀKI ══ */}
+        {/* ══ COL 3: VECĀKI ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
-          <Sec t="Vakardienas un vecāki" s={S} />
-          {(data.emailsOld || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu</div>}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px` }}>
-            {(data.emailsOld || []).slice(0, 15).map((email, i) => {
+          <Sec t="Vecāki" s={S} />
+          {oldEmails.length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu</div>}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px`, overflow: 'hidden' }}>
+            {oldEmails.slice(0, 15).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
-                <div key={i} style={{
-                  background: C.card, borderRadius: 8*S, padding: `${3*S}px ${5*S}px`,
-                  borderLeft: email.urgent ? `3px solid ${C.red}` : 'none',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {email.subject}
-                    </div>
-                    <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
-                      <Pill t={email.account} c={accColor} s={S} />
-                      <span style={{ color: email.urgent ? C.red : C.orange, fontWeight: 700, fontSize: 5*S }}>{email.daysOld}d</span>
+                <div key={i}>
+                  <div style={{
+                    background: C.card, borderRadius: 8*S, padding: `${3*S}px ${5*S}px`,
+                    borderLeft: email.urgent ? `3px solid ${C.red}` : 'none',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {email.subject}
+                      </div>
+                      <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
+                        <Pill t={email.account} c={accColor} s={S} />
+                        <span style={{ color: email.urgent ? C.red : C.orange, fontWeight: 700, fontSize: 5*S }}>{email.daysOld}d</span>
+                      </div>
                     </div>
                   </div>
+                  <ClaudeBubble text={email.suggestion} cls={`expand-old-${i}`} s={S} />
                 </div>
               );
             })}
@@ -255,9 +242,31 @@ export default async function DashboardPage() {
   );
 }
 
+// ═══ KOMPONENTES ═══
+
 function Sec({ t, s, noM, c }) {
   return <div style={{ fontSize: 6*s, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, color: c || 'rgba(255,255,255,0.35)', marginBottom: noM ? 0 : 3*s }}>{t}</div>;
 }
+
 function Pill({ t, c, s }) {
   return <span style={{ fontSize: 5*s, padding: `${1*s}px ${5*s}px`, borderRadius: 20*s, fontWeight: 600, background: `${c}20`, color: c }}>{t}</span>;
+}
+
+function ClaudeBubble({ text, cls, s }) {
+  return (
+    <div className={cls} style={{
+      background: 'rgba(48,209,88,0.15)',
+      border: '1px solid rgba(48,209,88,0.3)',
+      borderRadius: 8*s,
+      maxHeight: 0, opacity: 0, overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 3*s, marginBottom: 1*s }}>
+        <span style={{ fontSize: 4.5*s, color: '#30d158', fontWeight: 700 }}>Claude</span>
+        <span className="arrow-bounce" style={{ fontSize: 5*s, color: '#30d158' }}>↑</span>
+      </div>
+      <div style={{ fontSize: 5.5*s, color: '#fff', fontWeight: 500, lineHeight: 1.35 }}>
+        {text || 'Izlasi un izlemj'}
+      </div>
+    </div>
+  );
 }
