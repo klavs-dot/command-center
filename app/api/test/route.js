@@ -1,42 +1,36 @@
-// app/api/test/route.js
 import { fetchGmailData } from '@/lib/gmail-fetcher';
-import { fetchCalendarData } from '@/lib/calendar-fetcher';
-import { fetchClickUpData } from '@/lib/clickup-fetcher';
+import { analyzeEmails } from '@/lib/claude-fetcher';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function GET() {
   const results = {};
 
-  // Test Gmail
-  try {
-    const gmail = await fetchGmailData();
-    results.gmail = gmail ? `OK — ${gmail.total} e-pasti` : 'Nav konfigurēts';
-  } catch (e) { results.gmail = `KĻŪDA: ${e.message}`; }
+  // 1. Dabūjam e-pastus
+  const gmail = await fetchGmailData();
+  results.gmail = gmail ? `${gmail.total} e-pasti` : 'Nav';
 
-  // Test Calendar
-  try {
-    const cal = await fetchCalendarData();
-    const events = cal?.calendar?.reduce((s, d) => s + d.events.length, 0) || 0;
-    results.calendar = cal ? `OK — ${events} notikumi, ${cal.travel?.length || 0} ceļojumi` : 'Nav konfigurēts';
-  } catch (e) { results.calendar = `KĻŪDA: ${e.message}`; }
+  // 2. Sūtam Claude analīzei
+  if (gmail?.recent?.length) {
+    const ai = await analyzeEmails(gmail.recent);
+    if (ai) {
+      results.claude = `OK — ${ai.length} ieteikumi`;
+      results.examples = ai.slice(0, 3).map(a => ({
+        subject: a.subject,
+        suggestion: a.suggestion,
+        urgent: a.urgent,
+      }));
+    } else {
+      results.claude = 'Claude neatbildēja';
+    }
+  } else {
+    results.claude = 'Nav e-pastu ko analizēt';
+  }
 
-  // Test ClickUp
-  try {
-    const clickup = await fetchClickUpData();
-    results.clickup = clickup ? `OK — ${clickup.completed?.length || 0} pabeigti, ${clickup.overdue?.length || 0} kavējas` : 'Nav konfigurēts';
-  } catch (e) { results.clickup = `KĻŪDA: ${e.message}`; }
-
-  // API keys status
   results.keys = {
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? 'Ir' : 'NAV',
-    CLICKUP_API_TOKEN: process.env.CLICKUP_API_TOKEN ? 'Ir' : 'NAV',
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Ir' : 'NAV',
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Ir' : 'NAV',
     GOOGLE_REFRESH_TOKEN_1: process.env.GOOGLE_REFRESH_TOKEN_1 ? 'Ir' : 'NAV',
-    GOOGLE_REFRESH_TOKEN_2: process.env.GOOGLE_REFRESH_TOKEN_2 ? 'Ir (nākamais konts)' : 'Nav (vēlāk)',
-    GOOGLE_REFRESH_TOKEN_3: process.env.GOOGLE_REFRESH_TOKEN_3 ? 'Ir (nākamais konts)' : 'Nav (vēlāk)',
   };
 
   return Response.json(results);
