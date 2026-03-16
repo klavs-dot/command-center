@@ -3,25 +3,23 @@ export const metadata = { title: 'Command Center' };
 
 export default function RootLayout({ children }) {
   const total = 10;
-  const duration = 10;
-  const cycle = total * duration; // 100s
+  const dur = 10;
+  const cycle = total * dur;
 
-  // Burbulis slīd uz leju pa kolonnas līniju
-  let bubbleFrames = '';
+  let bubbles = '';
   for (let i = 0; i < total; i++) {
-    const s = ((i * duration) / cycle * 100).toFixed(2);
-    const s2 = ((i * duration + 0.8) / cycle * 100).toFixed(2);
-    const e2 = (((i + 1) * duration - 0.8) / cycle * 100).toFixed(2);
-    const e = (((i + 1) * duration) / cycle * 100).toFixed(2);
-    const topPct = (i / total * 100).toFixed(1);
-    bubbleFrames += `
-      @keyframes slideBubble${i} {
-        0%, ${s}% { opacity: 0; top: ${topPct}%; }
-        ${s2}% { opacity: 1; top: ${topPct}%; }
-        ${e2}% { opacity: 1; top: ${topPct}%; }
-        ${e}%, 100% { opacity: 0; top: ${topPct}%; }
+    const s1 = ((i * dur) / cycle * 100).toFixed(2);
+    const s2 = ((i * dur + 0.8) / cycle * 100).toFixed(2);
+    const e2 = (((i + 1) * dur - 0.8) / cycle * 100).toFixed(2);
+    const e1 = (((i + 1) * dur) / cycle * 100).toFixed(2);
+    bubbles += `
+      @keyframes showB${i} {
+        0%,${s1}% { opacity:0; transform:translateY(4px); }
+        ${s2}% { opacity:1; transform:translateY(0); }
+        ${e2}% { opacity:1; transform:translateY(0); }
+        ${e1}%,100% { opacity:0; transform:translateY(-4px); }
       }
-      .slide-bubble-${i} { animation: slideBubble${i} ${cycle}s ease-in-out infinite; }
+      .slide-bubble-${i} { animation: showB${i} ${cycle}s ease-in-out infinite; }
     `;
   }
 
@@ -39,8 +37,6 @@ export default function RootLayout({ children }) {
           @keyframes slideInLeft { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
           @keyframes countPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
           @keyframes travelGlow { 0%,100%{opacity:0.85} 50%{opacity:1} }
-          @keyframes barGrow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
-          @keyframes liveNumber { 0%,100%{opacity:1} 50%{opacity:0.6} }
           @keyframes arrowBounce { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
           .live-badge{animation:liveBlink 2s ease-in-out infinite}
           .live-dot{animation:liveDot 2s ease-in-out infinite}
@@ -50,10 +46,8 @@ export default function RootLayout({ children }) {
           .cal-item{animation:slideInLeft 0.4s ease-out both}
           .count-badge{animation:countPulse 2s ease-in-out infinite;display:inline-block}
           .travel-badge{animation:travelGlow 2.5s ease-in-out infinite}
-          .bar-grow{animation:barGrow 1s ease-out both;transform-origin:bottom}
-          .live-number{animation:liveNumber 3s ease-in-out infinite}
           .arrow-bounce{animation:arrowBounce 1.5s ease-in-out infinite;display:inline-block}
-          ${bubbleFrames}
+          ${bubbles}
         `}} />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', background: '#1c1c1e' }}>
