@@ -2,30 +2,6 @@
 export const metadata = { title: 'Command Center' };
 
 export default function RootLayout({ children }) {
-  // Jaunākie: 10 e-pasti × 10s = 100s cikls
-  const t1 = 10, d1 = 10, c1 = t1 * d1;
-  let b1 = '';
-  for (let i = 0; i < t1; i++) {
-    const s1 = ((i*d1)/c1*100).toFixed(2), s2 = ((i*d1+0.6)/c1*100).toFixed(2);
-    const e2 = (((i+1)*d1-0.6)/c1*100).toFixed(2), e1 = (((i+1)*d1)/c1*100).toFixed(2);
-    b1 += `
-      @keyframes exB${i}{0%,${s1}%{max-height:0;opacity:0;padding:0 12px;margin-top:0}${s2}%{max-height:100px;opacity:1;padding:8px 12px;margin-top:5px}${e2}%{max-height:100px;opacity:1;padding:8px 12px;margin-top:5px}${e1}%,100%{max-height:0;opacity:0;padding:0 12px;margin-top:0}}
-      .expand-bubble-${i}{animation:exB${i} ${c1}s ease-in-out infinite;overflow:hidden}
-    `;
-  }
-
-  // Vecākie: 15 e-pasti × 10s = 150s cikls
-  const t2 = 15, d2 = 10, c2 = t2 * d2;
-  let b2 = '';
-  for (let i = 0; i < t2; i++) {
-    const s1 = ((i*d2)/c2*100).toFixed(2), s2 = ((i*d2+0.6)/c2*100).toFixed(2);
-    const e2 = (((i+1)*d2-0.6)/c2*100).toFixed(2), e1 = (((i+1)*d2)/c2*100).toFixed(2);
-    b2 += `
-      @keyframes exO${i}{0%,${s1}%{max-height:0;opacity:0;padding:0 12px;margin-top:0}${s2}%{max-height:100px;opacity:1;padding:8px 12px;margin-top:5px}${e2}%{max-height:100px;opacity:1;padding:8px 12px;margin-top:5px}${e1}%,100%{max-height:0;opacity:0;padding:0 12px;margin-top:0}}
-      .expand-old-${i}{animation:exO${i} ${c2}s ease-in-out infinite;overflow:hidden}
-    `;
-  }
-
   return (
     <html lang="lv">
       <head>
@@ -50,7 +26,6 @@ export default function RootLayout({ children }) {
           .count-badge{animation:countPulse 2s ease-in-out infinite;display:inline-block}
           .travel-badge{animation:travelGlow 2.5s ease-in-out infinite}
           .arrow-bounce{animation:arrowBounce 1.5s ease-in-out infinite;display:inline-block}
-          ${b1}${b2}
         `}} />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', background: '#1c1c1e' }}>
