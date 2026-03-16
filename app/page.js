@@ -105,31 +105,35 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* ══ CLAUDE BURBULIS — uz kolonnas robežas starp 1 un 2 ══ */}
+        {/* ══ CLAUDE BURBULIS — uz kolonnas robežas ══ */}
         <div style={{
           position: 'absolute', left: '15%', top: `${12*S}px`,
           width: `${50*S}px`, height: `calc(100% - ${12*S}px)`,
           transform: 'translateX(-50%)',
           zIndex: 30, pointerEvents: 'none',
         }}>
-          {emails.slice(0, 10).map((email, i) => (
-            <div key={i} className={`slide-bubble-${i}`} style={{
-              position: 'absolute', left: 0, width: '100%', opacity: 0,
-            }}>
-              <div style={{
-                background: 'rgba(48,209,88,0.18)',
-                border: '1px solid rgba(48,209,88,0.35)',
-                borderRadius: 10*S, padding: `${4*S}px ${5*S}px`,
+          {emails.slice(0, 10).map((email, i) => {
+            const topPct = (i / Math.max(emails.length, 1) * 100).toFixed(1);
+            return (
+              <div key={i} className={`slide-bubble-${i}`} style={{
+                position: 'absolute', left: 0, width: '100%', opacity: 0,
+                top: `${topPct}%`,
               }}>
-                <div style={{ fontSize: 4*S, color: C.green, fontWeight: 700, marginBottom: 2*S, letterSpacing: 0.5 }}>
-                  Claude <span className="arrow-bounce">→</span>
-                </div>
-                <div style={{ fontSize: 5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
-                  {email.suggestion || 'Izlasi un izlemj'}
+                <div style={{
+                  background: 'rgba(48,209,88,0.18)',
+                  border: '1px solid rgba(48,209,88,0.35)',
+                  borderRadius: 10*S, padding: `${4*S}px ${5*S}px`,
+                }}>
+                  <div style={{ fontSize: 4*S, color: C.green, fontWeight: 700, marginBottom: 2*S, letterSpacing: 0.5 }}>
+                    Claude <span className="arrow-bounce">→</span>
+                  </div>
+                  <div style={{ fontSize: 5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
+                    {email.suggestion || 'Izlasi un izlemj'}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* ══ COL 2: JAUNĀKIE 10 E-PASTI ══ */}
@@ -145,7 +149,7 @@ export default async function DashboardPage() {
             }}>{emails.length}</span>
           </div>
 
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px` }}>
             {emails.slice(0, 10).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
@@ -178,7 +182,7 @@ export default async function DashboardPage() {
         }}>
           <Sec t="Vakardienas un vecāki" s={S} />
           {(data.emailsOld || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu</div>}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 2*S }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${2*S}px` }}>
             {(data.emailsOld || []).slice(0, 15).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
@@ -203,7 +207,7 @@ export default async function DashboardPage() {
 
         {/* ══ COL 4: CLICKUP ══ */}
         <div style={{
-          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${8*S}px ${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           {/* Kavējas */}
