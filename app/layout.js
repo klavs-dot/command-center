@@ -9,17 +9,17 @@ export default function RootLayout({ children }) {
   let bubbles = '';
   for (let i = 0; i < total; i++) {
     const s1 = ((i * dur) / cycle * 100).toFixed(2);
-    const s2 = ((i * dur + 0.8) / cycle * 100).toFixed(2);
-    const e2 = (((i + 1) * dur - 0.8) / cycle * 100).toFixed(2);
+    const s2 = ((i * dur + 0.6) / cycle * 100).toFixed(2);
+    const e2 = (((i + 1) * dur - 0.6) / cycle * 100).toFixed(2);
     const e1 = (((i + 1) * dur) / cycle * 100).toFixed(2);
     bubbles += `
-      @keyframes showB${i} {
-        0%,${s1}% { opacity:0; transform:translateY(4px); }
-        ${s2}% { opacity:1; transform:translateY(0); }
-        ${e2}% { opacity:1; transform:translateY(0); }
-        ${e1}%,100% { opacity:0; transform:translateY(-4px); }
+      @keyframes expandB${i} {
+        0%,${s1}% { max-height:0; opacity:0; padding:0 12px; margin-top:0; }
+        ${s2}% { max-height:100px; opacity:1; padding:8px 12px; margin-top:5px; }
+        ${e2}% { max-height:100px; opacity:1; padding:8px 12px; margin-top:5px; }
+        ${e1}%,100% { max-height:0; opacity:0; padding:0 12px; margin-top:0; }
       }
-      .slide-bubble-${i} { animation: showB${i} ${cycle}s ease-in-out infinite; }
+      .expand-bubble-${i} { animation: expandB${i} ${cycle}s ease-in-out infinite; overflow:hidden; }
     `;
   }
 
