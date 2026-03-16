@@ -20,39 +20,17 @@ async function getDashboardData() {
 }
 
 const S = 2.5;
-
-// Apple krāsas
 const C = {
-  bg: '#1c1c1e',
-  card: '#2c2c2e',
-  card2: '#3a3a3c',
-  border: 'rgba(255,255,255,0.06)',
-  text: '#ffffff',
-  text2: 'rgba(255,255,255,0.6)',
-  text3: 'rgba(255,255,255,0.35)',
-  blue: '#0a84ff',
-  green: '#30d158',
-  red: '#ff375f',
-  orange: '#ff9f0a',
-  purple: '#bf5af2',
-  teal: '#64d2ff',
-};
-
-// Uzņēmumu krāsas Apple stilā
-const companyColors = {
-  VL: C.blue,
-  DA: C.red,
-  MO: C.purple,
-  GWM: C.teal,
+  bg: '#1c1c1e', card: '#2c2c2e', border: 'rgba(255,255,255,0.06)',
+  text: '#ffffff', text2: 'rgba(255,255,255,0.6)', text3: 'rgba(255,255,255,0.35)',
+  blue: '#0a84ff', green: '#30d158', red: '#ff375f', orange: '#ff9f0a', purple: '#bf5af2', teal: '#64d2ff',
 };
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
   const time = formatRigaTime();
   const dateStr = formatRigaDate();
-
-  const hasOverdue = (data.overdueTasks || []).length > 0;
-  const hasUnassigned = (data.unassignedTasks || []).length > 0;
+  const isLive = data.source?.includes('live');
 
   return (
     <div style={{
@@ -61,42 +39,33 @@ export default async function DashboardPage() {
       background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
 
-      {/* Pulsēšanas animācijas */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes pulseRed {
-          0%, 100% { background: ${C.card}; }
-          50% { background: rgba(255,55,95,0.08); }
-        }
-        @keyframes pulseOrange {
-          0%, 100% { background: ${C.card}; }
-          50% { background: rgba(255,159,10,0.08); }
-        }
-        .pulse-red { animation: pulseRed 3s ease-in-out infinite; border-radius: ${10*S}px; padding: ${3*S}px ${5*S}px; margin: 0 -${5*S}px; }
-        .pulse-orange { animation: pulseOrange 3s ease-in-out infinite; border-radius: ${10*S}px; padding: ${3*S}px ${5*S}px; margin: 0 -${5*S}px; }
-      `}} />
-
       {/* TOP BAR */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: `${8*S}px ${14*S}px`,
-        background: C.card,
-        borderBottom: `1px solid ${C.border}`,
-        flexShrink: 0,
+        padding: `${8*S}px ${14*S}px`, background: C.card,
+        borderBottom: `1px solid ${C.border}`, flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10*S }}>
           <span style={{ fontSize: 20*S, fontWeight: 700, color: C.text, letterSpacing: -1 }}>{time}</span>
           <span style={{ fontSize: 7*S, color: C.text3, fontWeight: 500 }}>{dateStr}</span>
-          <span style={{
-            fontSize: 6*S, color: C.green, fontWeight: 600,
-            background: 'rgba(48,209,88,0.15)',
+          <span className="live-badge" style={{
+            fontSize: 6*S, color: isLive ? C.green : C.red, fontWeight: 600,
+            background: isLive ? 'rgba(48,209,88,0.15)' : 'rgba(255,55,95,0.15)',
             padding: `${1*S}px ${6*S}px`, borderRadius: 20*S,
-          }}>{data.source?.includes('live') ? 'LIVE' : 'MOCK'}</span>
+            display: 'flex', alignItems: 'center', gap: 4*S,
+          }}>
+            <span className="live-dot" style={{
+              width: 5*S, height: 5*S, borderRadius: '50%',
+              background: isLive ? C.green : C.red, display: 'inline-block',
+            }} />
+            {isLive ? 'LIVE' : 'MOCK'}
+          </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6*S }}>
           {(data.travel || []).map((t, i) => {
             const tc = t.days <= 7 ? C.orange : C.red;
             return (
-              <div key={i} style={{
+              <div key={i} className="travel-badge" style={{
                 background: `${tc}1F`, padding: `${4*S}px ${10*S}px`, borderRadius: 20*S,
                 display: 'flex', alignItems: 'center', gap: 5*S,
               }}>
@@ -111,7 +80,7 @@ export default async function DashboardPage() {
       {/* 4 COLUMNS */}
       <div style={{
         display: 'grid', gridTemplateColumns: '14% 33% 30% 23%',
-        flex: 1, overflow: 'hidden', padding: `${4*S}px`,  gap: `${4*S}px`,
+        flex: 1, overflow: 'hidden', padding: `${4*S}px`, gap: `${4*S}px`,
       }}>
 
         {/* ═══ COL 1: KALENDĀRS ═══ */}
@@ -121,19 +90,18 @@ export default async function DashboardPage() {
             const dayColor = di === 0 ? C.red : di === 1 ? C.orange : C.green;
             return (
               <div key={di} style={{ marginBottom: 6*S }}>
-                <div style={{ fontSize: 7*S, fontWeight: 700, color: dayColor, marginBottom: 3*S }}>
-                  {day.day}
-                </div>
+                <div style={{ fontSize: 7*S, fontWeight: 700, color: dayColor, marginBottom: 3*S }}>{day.day}</div>
                 {(day.events || []).length === 0 && (
                   <div style={{ fontSize: 5*S, color: C.text3, paddingLeft: 5*S }}>Nav notikumu</div>
                 )}
                 {(day.events || []).map((ev, ei) => {
                   const evColor = ev.color === '#a064ff' ? C.purple : ev.color === '#ff2d78' ? C.red : ev.color === '#00ff88' ? C.green : C.blue;
                   return (
-                    <div key={ei} style={{
+                    <div key={ei} className="cal-item" style={{
                       background: C.card, borderRadius: 8*S,
                       padding: `${4*S}px ${6*S}px`, marginBottom: 2*S,
-                      borderLeft: `${3}px solid ${evColor}`,
+                      borderLeft: `3px solid ${evColor}`,
+                      animationDelay: `${di * 0.15 + ei * 0.1}s`,
                     }}>
                       <div style={{ fontSize: 7*S, fontWeight: 600, color: C.text }}>{ev.time} {ev.title}</div>
                       <div style={{ fontSize: 5*S, color: C.text3 }}>{ev.platform} · {ev.duration}</div>
@@ -152,9 +120,10 @@ export default async function DashboardPage() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3*S }}>
             <Sec t="Inbox · Jaunākie" s={S} noM />
-            <span style={{
+            <span className="count-badge" style={{
               background: C.red, color: '#fff', fontSize: 6*S,
               padding: `${1*S}px ${6*S}px`, borderRadius: 20*S, fontWeight: 700,
+              display: 'inline-block',
             }}>{(data.emailsRecent || []).length}</span>
           </div>
 
@@ -162,10 +131,11 @@ export default async function DashboardPage() {
             {(data.emailsRecent || []).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
-                <div key={i} style={{
+                <div key={i} className="email-card" style={{
                   background: C.card, borderRadius: 8*S,
                   padding: `${4*S}px ${6*S}px`, marginBottom: 2*S,
                   borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
+                  animationDelay: `${i * 0.08}s`,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 1*S }}>
                     <div style={{ fontSize: 7*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -183,7 +153,6 @@ export default async function DashboardPage() {
             })}
           </div>
 
-          {/* Vecāki par 3d */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
             <Sec t="Vecāki par 3d · Nelasīti" s={S} />
             {(data.emailsOld || []).length === 0 && (
@@ -195,9 +164,7 @@ export default async function DashboardPage() {
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S }}>
                     <Pill t={email.account} c={accColor} s={S} />
-                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {email.subject}
-                    </span>
+                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email.subject}</span>
                     <span style={{ color: email.urgent ? C.red : C.orange, flexShrink: 0, fontWeight: 600 }}>{email.daysOld}d</span>
                   </div>
                 );
@@ -211,8 +178,7 @@ export default async function DashboardPage() {
           borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
-          {/* Kavējas */}
-          <Sec t="Kavējas · Overdue" s={S} c={hasOverdue ? C.red : undefined} />
+          <Sec t="Kavējas · Overdue" s={S} c={(data.overdueTasks || []).length > 0 ? C.red : undefined} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 4*S }}>
             {(data.overdueTasks || []).slice(0, 10).map((task, i) => {
               const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
@@ -220,9 +186,7 @@ export default async function DashboardPage() {
                 <div key={i} className="pulse-red" style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
                   <span style={{ color: C.red, fontWeight: 700, minWidth: 5*S }}>!</span>
                   <span style={{ color: task.daysLate >= 4 ? C.red : C.orange, minWidth: 14*S, fontWeight: 600 }}>{task.person}</span>
-                  <span style={{ color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {task.task}
-                  </span>
+                  <span style={{ color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
                   <Pill t={task.company} c={cc} s={S} />
                   <span style={{ color: C.red, fontSize: 5*S, flexShrink: 0, fontWeight: 700 }}>-{task.daysLate}d</span>
                 </div>
@@ -230,9 +194,8 @@ export default async function DashboardPage() {
             })}
           </div>
 
-          {/* Neuzņemtie */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S, marginBottom: 4*S }}>
-            <Sec t="Neuzņemtie · Unassigned" s={S} c={hasUnassigned ? C.orange : undefined} />
+            <Sec t="Neuzņemtie · Unassigned" s={S} c={(data.unassignedTasks || []).length > 0 ? C.orange : undefined} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {(data.unassignedTasks || []).slice(0, 10).map((task, i) => {
                 const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
@@ -240,9 +203,7 @@ export default async function DashboardPage() {
                   <div key={i} className="pulse-orange" style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
                     <span style={{ color: C.orange, fontWeight: 700, minWidth: 5*S }}>?</span>
                     <span style={{ color: C.text3, minWidth: 14*S }}>—</span>
-                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {task.task}
-                    </span>
+                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
                     <Pill t={task.company} c={cc} s={S} />
                     <span style={{ color: C.orange, fontSize: 5*S, flexShrink: 0, fontWeight: 600 }}>{task.daysWaiting || '?'}d</span>
                   </div>
@@ -251,7 +212,6 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Padarītie */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
             <Sec t="Pēdējie padarītie" s={S} c={C.green} />
             {(data.completedTasks || []).length === 0 && (
@@ -264,9 +224,7 @@ export default async function DashboardPage() {
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
                     <span style={{ color: C.green, fontWeight: 600, minWidth: 5*S }}>✓</span>
                     <span style={{ color: C.text3, minWidth: 14*S, fontWeight: 500 }}>{task.person}</span>
-                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {task.task}
-                    </span>
+                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
                     <Pill t={task.company} c={cc} s={S} />
                   </div>
                 );
@@ -289,8 +247,7 @@ export default async function DashboardPage() {
             {(data.social?.rows || []).map((row, ri) => {
               const vals = row.values.map((v, vi) => {
                 const oc = row.colors[vi];
-                const nc = oc === '#00ff88' ? C.green : oc === '#ff4455' ? C.red : C.orange;
-                return { v, c: nc };
+                return { v, c: oc === '#00ff88' ? C.green : oc === '#ff4455' ? C.red : C.orange };
               });
               return [
                 <div key={`l${ri}`} style={{ color: C.text2, fontWeight: 600, padding: `${2*S}px 0`, borderTop: ri > 0 ? `1px solid ${C.border}` : 'none' }}>{row.label}</div>,
@@ -301,7 +258,6 @@ export default async function DashboardPage() {
             }).flat()}
           </div>
 
-          {/* Arēna */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 5*S, marginBottom: 5*S }}>
             <Sec t="Arēna · Rezervācijas" s={S} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2*S }}>
@@ -318,9 +274,10 @@ export default async function DashboardPage() {
             </div>
             <div style={{ display: 'flex', gap: 2*S, alignItems: 'flex-end', height: 22*S }}>
               {(data.arena?.weekBars || []).map((h, i) => (
-                <div key={i} style={{
+                <div key={i} className="bar-grow" style={{
                   flex: 1, borderRadius: 3*S, height: `${h}%`,
                   background: h >= 90 ? C.blue : `rgba(10,132,255,${0.15 + h / 300})`,
+                  animationDelay: `${i * 0.1}s`,
                 }} />
               ))}
             </div>
@@ -329,19 +286,15 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Analytics */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 5*S }}>
             <Sec t="Analytics · Live" s={S} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3*S, marginBottom: 4*S }}>
               {(data.analytics?.live || []).map((a, i) => {
                 const lc = i === 0 ? C.blue : i === 1 ? C.red : C.purple;
                 return (
-                  <div key={i} style={{
-                    background: C.card, borderRadius: 8*S,
-                    padding: `${3*S}px`, textAlign: 'center',
-                  }}>
+                  <div key={i} style={{ background: C.card, borderRadius: 8*S, padding: `${3*S}px`, textAlign: 'center' }}>
                     <div style={{ fontSize: 5*S, color: C.text3 }}>{a.label}</div>
-                    <div style={{ fontSize: 14*S, fontWeight: 700, color: lc }}>{a.value}</div>
+                    <div className="live-number" style={{ fontSize: 14*S, fontWeight: 700, color: lc }}>{a.value}</div>
                   </div>
                 );
               })}
@@ -365,14 +318,11 @@ export default async function DashboardPage() {
   );
 }
 
-// ═══ KOMPONENTES ═══
-
 function Sec({ t, s, noM, c }) {
   return (
     <div style={{
       fontSize: 6*s, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1,
-      color: c || 'rgba(255,255,255,0.35)',
-      marginBottom: noM ? 0 : 3*s,
+      color: c || 'rgba(255,255,255,0.35)', marginBottom: noM ? 0 : 3*s,
     }}>{t}</div>
   );
 }
@@ -388,10 +338,7 @@ function Pill({ t, c, s }) {
 
 function MetBox({ l, v, vc = '#ffffff', s }) {
   return (
-    <div style={{
-      background: '#2c2c2e', borderRadius: 8*s,
-      padding: `${3*s}px`, textAlign: 'center',
-    }}>
+    <div style={{ background: '#2c2c2e', borderRadius: 8*s, padding: `${3*s}px`, textAlign: 'center' }}>
       <div style={{ fontSize: 5*s, color: 'rgba(255,255,255,0.35)' }}>{l}</div>
       <div style={{ fontSize: 12*s, fontWeight: 700, color: vc }}>{v}</div>
     </div>
