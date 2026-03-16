@@ -30,7 +30,6 @@ export default async function DashboardPage() {
   const dateStr = formatRigaDate();
   const isLive = data.source?.includes('live');
   const emails = data.emailsRecent || [];
-  const emailCount = Math.max(emails.length, 1);
 
   return (
     <div style={{
@@ -54,10 +53,7 @@ export default async function DashboardPage() {
             padding: `${1*S}px ${6*S}px`, borderRadius: 20*S,
             display: 'flex', alignItems: 'center', gap: 4*S,
           }}>
-            <span className="live-dot" style={{
-              width: 5*S, height: 5*S, borderRadius: '50%',
-              background: isLive ? C.green : C.red, display: 'inline-block',
-            }} />
+            <span className="live-dot" style={{ width: 5*S, height: 5*S, borderRadius: '50%', background: isLive ? C.green : C.red, display: 'inline-block' }} />
             {isLive ? 'LIVE' : 'MOCK'}
           </span>
         </div>
@@ -79,12 +75,12 @@ export default async function DashboardPage() {
 
       {/* ══ 4 COLUMNS ══ */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '16% 28% 24% 32%',
-        flex: 1, overflow: 'hidden', padding: `${4*S}px`, gap: `${4*S}px`,
+        display: 'grid', gridTemplateColumns: '15% 28% 24% 33%',
+        flex: 1, overflow: 'hidden', position: 'relative',
       }}>
 
-        {/* ══ COL 1: KALENDĀRS + AI OVERLAY ══ */}
-        <div style={{ overflow: 'hidden', padding: `${3*S}px`, position: 'relative' }}>
+        {/* ══ COL 1: KALENDĀRS ══ */}
+        <div style={{ overflow: 'hidden', padding: `${5*S}px ${4*S}px` }}>
           <Sec t="Kalendārs" s={S} />
           {(data.calendar || []).map((day, di) => {
             const dc = di === 0 ? C.red : di === 1 ? C.orange : C.green;
@@ -107,24 +103,28 @@ export default async function DashboardPage() {
               </div>
             );
           })}
+        </div>
 
-          {/* AI BURBULIS — overlay virsū kalendāram */}
-          {emails.slice(0, 7).map((email, i) => (
-            <div key={i} className={`ai-bubble-${i}`} style={{
-              position: 'absolute', bottom: 4*S, left: 3*S, right: 3*S,
-              opacity: 0, zIndex: 20,
+        {/* ══ CLAUDE BURBULIS — uz kolonnas robežas starp 1 un 2 ══ */}
+        <div style={{
+          position: 'absolute', left: '15%', top: `${12*S}px`,
+          width: `${50*S}px`, height: `calc(100% - ${12*S}px)`,
+          transform: 'translateX(-50%)',
+          zIndex: 30, pointerEvents: 'none',
+        }}>
+          {emails.slice(0, 10).map((email, i) => (
+            <div key={i} className={`slide-bubble-${i}`} style={{
+              position: 'absolute', left: 0, width: '100%', opacity: 0,
             }}>
               <div style={{
-                background: 'rgba(48,209,88,0.15)',
-                border: '1px solid rgba(48,209,88,0.3)',
-                borderRadius: 12*S, padding: `${5*S}px ${6*S}px`,
-                backdropFilter: 'blur(10px)',
+                background: 'rgba(48,209,88,0.18)',
+                border: '1px solid rgba(48,209,88,0.35)',
+                borderRadius: 10*S, padding: `${4*S}px ${5*S}px`,
               }}>
-                <div style={{ fontSize: 4*S, color: C.green, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2*S, opacity: 0.7 }}>AI ieteikums</div>
-                <div style={{ fontSize: 5*S, color: C.text3, marginBottom: 1*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
-                <div style={{ fontSize: 6*S, color: C.text, fontWeight: 600, marginBottom: 2*S, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email.subject || '(bez temata)'}</div>
-                <div style={{ fontSize: 6*S, color: C.green, fontWeight: 500, lineHeight: 1.3 }}>
-                  <span className="bubble-arrow" style={{ marginRight: 2*S }}>→</span>
+                <div style={{ fontSize: 4*S, color: C.green, fontWeight: 700, marginBottom: 2*S, letterSpacing: 0.5 }}>
+                  Claude <span className="arrow-bounce">→</span>
+                </div>
+                <div style={{ fontSize: 5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
                   {email.suggestion || 'Izlasi un izlemj'}
                 </div>
               </div>
@@ -132,9 +132,9 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {/* ══ COL 2: E-PASTI JAUNĀKIE ══ */}
+        {/* ══ COL 2: JAUNĀKIE 10 E-PASTI ══ */}
         <div style={{
-          borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px ${5*S}px ${6*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3*S }}>
@@ -146,27 +146,24 @@ export default async function DashboardPage() {
           </div>
 
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            {emails.slice(0, 7).map((email, i) => {
+            {emails.slice(0, 10).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
                 <div key={i} className="email-card" style={{
                   background: C.card, borderRadius: 8*S,
-                  padding: `${4*S}px ${6*S}px`,
+                  padding: `${3*S}px ${5*S}px`,
                   borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
-                  animationDelay: `${i * 0.08}s`,
+                  animationDelay: `${i * 0.06}s`,
                 }}>
-                  <div style={{ fontSize: 5*S, color: C.text3, marginBottom: 1*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
+                  <div style={{ fontSize: 4.5*S, color: C.text3, marginBottom: 0.5*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 7*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {email.subject || '(bez temata)'}
                     </div>
-                    <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 4*S }}>
-                      <span style={{ fontSize: 5*S, color: C.text3 }}>{email.date}</span>
+                    <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
+                      <span style={{ fontSize: 4.5*S, color: C.text3 }}>{email.date}</span>
                       <Pill t={email.account} c={accColor} s={S} />
                     </div>
-                  </div>
-                  <div style={{ fontSize: 5*S, color: C.text2, marginTop: 1*S, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {email.snippet || email.summary || ''}
                   </div>
                 </div>
               );
@@ -174,19 +171,19 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* ══ COL 3: E-PASTI VECĀKIE ══ */}
+        {/* ══ COL 3: VAKARDIENAS UN VECĀKI — 15 ══ */}
         <div style={{
-          borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
-          <Sec t="Vecāki par 3d · Nelasīti" s={S} />
-          {(data.emailsOld || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu e-pastu</div>}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3*S }}>
-            {(data.emailsOld || []).map((email, i) => {
+          <Sec t="Vakardienas un vecāki" s={S} />
+          {(data.emailsOld || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu</div>}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 2*S }}>
+            {(data.emailsOld || []).slice(0, 15).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
                 <div key={i} style={{
-                  background: C.card, borderRadius: 8*S, padding: `${4*S}px ${6*S}px`,
+                  background: C.card, borderRadius: 8*S, padding: `${3*S}px ${5*S}px`,
                   borderLeft: email.urgent ? `3px solid ${C.red}` : 'none',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -195,7 +192,7 @@ export default async function DashboardPage() {
                     </div>
                     <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
                       <Pill t={email.account} c={accColor} s={S} />
-                      <span style={{ color: email.urgent ? C.red : C.orange, fontWeight: 700, fontSize: 6*S }}>{email.daysOld}d</span>
+                      <span style={{ color: email.urgent ? C.red : C.orange, fontWeight: 700, fontSize: 5*S }}>{email.daysOld}d</span>
                     </div>
                   </div>
                 </div>
@@ -204,9 +201,9 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* ══ COL 4: CLICKUP TO-DO ══ */}
+        {/* ══ COL 4: CLICKUP ══ */}
         <div style={{
-          borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           {/* Kavējas */}
