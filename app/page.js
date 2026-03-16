@@ -13,9 +13,7 @@ async function getDashboardData() {
         : 'http://localhost:3000/api/dashboard';
     const res = await fetch(url, { cache: 'no-store' });
     if (res.ok) return res.json();
-  } catch (e) {
-    console.log('API:', e.message);
-  }
+  } catch (e) { console.log('API:', e.message); }
   return getMockData();
 }
 
@@ -32,7 +30,7 @@ export default async function DashboardPage() {
   const dateStr = formatRigaDate();
   const isLive = data.source?.includes('live');
   const emails = data.emailsRecent || [];
-  const emailCount = emails.length || 1;
+  const emailCount = Math.max(emails.length, 1);
 
   return (
     <div style={{
@@ -81,12 +79,12 @@ export default async function DashboardPage() {
 
       {/* ══ 4 COLUMNS ══ */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '14% 33% 30% 23%',
+        display: 'grid', gridTemplateColumns: '16% 28% 24% 32%',
         flex: 1, overflow: 'hidden', padding: `${4*S}px`, gap: `${4*S}px`,
       }}>
 
-        {/* ══ COL 1: KALENDĀRS ══ */}
-        <div style={{ overflow: 'hidden', padding: `${3*S}px` }}>
+        {/* ══ COL 1: KALENDĀRS + AI OVERLAY ══ */}
+        <div style={{ overflow: 'hidden', padding: `${3*S}px`, position: 'relative' }}>
           <Sec t="Kalendārs" s={S} />
           {(data.calendar || []).map((day, di) => {
             const dc = di === 0 ? C.red : di === 1 ? C.orange : C.green;
@@ -109,12 +107,35 @@ export default async function DashboardPage() {
               </div>
             );
           })}
+
+          {/* AI BURBULIS — overlay virsū kalendāram */}
+          {emails.slice(0, 7).map((email, i) => (
+            <div key={i} className={`ai-bubble-${i}`} style={{
+              position: 'absolute', bottom: 4*S, left: 3*S, right: 3*S,
+              opacity: 0, zIndex: 20,
+            }}>
+              <div style={{
+                background: 'rgba(48,209,88,0.15)',
+                border: '1px solid rgba(48,209,88,0.3)',
+                borderRadius: 12*S, padding: `${5*S}px ${6*S}px`,
+                backdropFilter: 'blur(10px)',
+              }}>
+                <div style={{ fontSize: 4*S, color: C.green, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2*S, opacity: 0.7 }}>AI ieteikums</div>
+                <div style={{ fontSize: 5*S, color: C.text3, marginBottom: 1*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
+                <div style={{ fontSize: 6*S, color: C.text, fontWeight: 600, marginBottom: 2*S, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email.subject || '(bez temata)'}</div>
+                <div style={{ fontSize: 6*S, color: C.green, fontWeight: 500, lineHeight: 1.3 }}>
+                  <span className="bubble-arrow" style={{ marginRight: 2*S }}>→</span>
+                  {email.suggestion || 'Izlasi un izlemj'}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* ══ COL 2: E-PASTI ar AI burbuli ══ */}
+        {/* ══ COL 2: E-PASTI JAUNĀKIE ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
-          display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3*S }}>
             <Sec t="Inbox · Jaunākie" s={S} noM />
@@ -124,99 +145,71 @@ export default async function DashboardPage() {
             }}>{emails.length}</span>
           </div>
 
-          {/* E-pastu saraksts + AI burbuļi */}
-          <div style={{ flex: 1, display: 'flex', position: 'relative', marginBottom: 4*S }}>
-
-            {/* AI BURBUĻU KOLONNA — kreisajā pusē */}
-            <div style={{
-              width: `${55*S}px`, flexShrink: 0, position: 'relative', marginRight: 3*S,
-            }}>
-              {emails.slice(0, 7).map((email, i) => {
-                const topPct = (i / emailCount * 100);
-                const heightPct = (1 / emailCount * 100);
-                return (
-                  <div key={i} className={`ai-bubble-${i}`} style={{
-                    position: 'absolute', left: 0, right: 0,
-                    top: `${topPct}%`, height: `${heightPct}%`,
-                    display: 'flex', alignItems: 'center',
-                    opacity: 0,
-                  }}>
-                    <div style={{
-                      background: 'rgba(48,209,88,0.12)',
-                      border: `1px solid rgba(48,209,88,0.25)`,
-                      borderRadius: 10*S, padding: `${3*S}px ${5*S}px`,
-                      width: '100%',
-                    }}>
-                      <div style={{ fontSize: 4*S, color: C.text3, marginBottom: 1*S, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>AI ieteikums</div>
-                      <div style={{ fontSize: 5*S, color: C.green, fontWeight: 500, lineHeight: 1.3 }}>
-                        {email.suggestion || 'Izlasi un izlemj'}
-                      </div>
-                      <div className="bubble-arrow" style={{ fontSize: 5*S, color: C.green, marginTop: 1*S }}>→</div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            {emails.slice(0, 7).map((email, i) => {
+              const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
+              return (
+                <div key={i} className="email-card" style={{
+                  background: C.card, borderRadius: 8*S,
+                  padding: `${4*S}px ${6*S}px`,
+                  borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
+                  animationDelay: `${i * 0.08}s`,
+                }}>
+                  <div style={{ fontSize: 5*S, color: C.text3, marginBottom: 1*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 7*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {email.subject || '(bez temata)'}
+                    </div>
+                    <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 4*S }}>
+                      <span style={{ fontSize: 5*S, color: C.text3 }}>{email.date}</span>
+                      <Pill t={email.account} c={accColor} s={S} />
                     </div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* E-PASTU KARTĪTES */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              {emails.slice(0, 7).map((email, i) => {
-                const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
-                return (
-                  <div key={i} className="email-card" style={{
-                    background: C.card, borderRadius: 8*S,
-                    padding: `${4*S}px ${6*S}px`,
-                    borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
-                    animationDelay: `${i * 0.08}s`,
-                  }}>
-                    {/* Sūtītājs */}
-                    <div style={{ fontSize: 5*S, color: C.text3, marginBottom: 1*S, fontWeight: 500 }}>
-                      {email.from || 'Nezināms sūtītājs'}
-                    </div>
-                    {/* Temats + datums + konts */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: 7*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {email.subject || '(bez temata)'}
-                      </div>
-                      <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 4*S }}>
-                        <span style={{ fontSize: 5*S, color: C.text3 }}>{email.date}</span>
-                        <Pill t={email.account} c={accColor} s={S} />
-                      </div>
-                    </div>
-                    {/* Snippet */}
-                    <div style={{ fontSize: 5*S, color: C.text2, marginTop: 1*S, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {email.snippet || email.summary || ''}
-                    </div>
+                  <div style={{ fontSize: 5*S, color: C.text2, marginTop: 1*S, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {email.snippet || email.summary || ''}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Vecāki par 3d */}
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
-            <Sec t="Vecāki par 3d · Nelasīti" s={S} />
-            {(data.emailsOld || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu e-pastu</div>}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2*S }}>
-              {(data.emailsOld || []).map((email, i) => {
-                const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S }}>
-                    <Pill t={email.account} c={accColor} s={S} />
-                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email.subject}</span>
-                    <span style={{ color: email.urgent ? C.red : C.orange, flexShrink: 0, fontWeight: 600 }}>{email.daysOld}d</span>
-                  </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ══ COL 3: KAVĒJAS + NEUZŅEMTIE + PADARĪTIE ══ */}
+        {/* ══ COL 3: E-PASTI VECĀKIE ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
+          <Sec t="Vecāki par 3d · Nelasīti" s={S} />
+          {(data.emailsOld || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav vecu nelasītu e-pastu</div>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3*S }}>
+            {(data.emailsOld || []).map((email, i) => {
+              const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
+              return (
+                <div key={i} style={{
+                  background: C.card, borderRadius: 8*S, padding: `${4*S}px ${6*S}px`,
+                  borderLeft: email.urgent ? `3px solid ${C.red}` : 'none',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {email.subject}
+                    </div>
+                    <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
+                      <Pill t={email.account} c={accColor} s={S} />
+                      <span style={{ color: email.urgent ? C.red : C.orange, fontWeight: 700, fontSize: 6*S }}>{email.daysOld}d</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ══ COL 4: CLICKUP TO-DO ══ */}
+        <div style={{
+          borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        }}>
+          {/* Kavējas */}
           <Sec t="Kavējas · Overdue" s={S} c={(data.overdueTasks || []).length > 0 ? C.red : undefined} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 4*S }}>
             {(data.overdueTasks || []).slice(0, 10).map((task, i) => {
@@ -233,6 +226,7 @@ export default async function DashboardPage() {
             })}
           </div>
 
+          {/* Neuzņemtie */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S, marginBottom: 4*S }}>
             <Sec t="Neuzņemtie · Unassigned" s={S} c={(data.unassignedTasks || []).length > 0 ? C.orange : undefined} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -251,6 +245,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
+          {/* Padarītie */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
             <Sec t="Pēdējie padarītie" s={S} c={C.green} />
             {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
@@ -269,78 +264,6 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-
-        {/* ══ COL 4: STATS ══ */}
-        <div style={{
-          borderLeft: `1px solid ${C.border}`, paddingLeft: `${5*S}px`,
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        }}>
-          <Sec t="Social · 30d pieaugums" s={S} />
-          <div style={{ display: 'grid', gridTemplateColumns: `${38*S}px repeat(4,1fr)`, gap: 0, fontSize: 7*S, marginBottom: 5*S }}>
-            <div />
-            {(data.social?.headers || []).map((h, i) => (
-              <div key={i} style={{ textAlign: 'center', color: C.text3, fontWeight: 600, padding: `${2*S}px 0` }}>{h}</div>
-            ))}
-            {(data.social?.rows || []).map((row, ri) => [
-              <div key={`l${ri}`} style={{ color: C.text2, fontWeight: 600, padding: `${2*S}px 0`, borderTop: ri > 0 ? `1px solid ${C.border}` : 'none' }}>{row.label}</div>,
-              ...row.values.map((v, vi) => {
-                const nc = row.colors[vi] === '#00ff88' ? C.green : row.colors[vi] === '#ff4455' ? C.red : C.orange;
-                return <div key={`v${ri}${vi}`} style={{ textAlign: 'center', color: nc, fontWeight: 600, padding: `${2*S}px 0`, borderTop: ri > 0 ? `1px solid ${C.border}` : 'none' }}>{v}</div>;
-              }),
-            ]).flat()}
-          </div>
-
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 5*S, marginBottom: 5*S }}>
-            <Sec t="Arēna · Rezervācijas" s={S} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2*S }}>
-              <span style={{ fontSize: 7*S, color: C.text3 }}>Šomēnes</span>
-              <span style={{ fontSize: 18*S, fontWeight: 700, color: C.text, letterSpacing: -1 }}>{data.arena?.thisMonth}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7*S, marginBottom: 3*S }}>
-              <span style={{ color: C.text3 }}>vs iepr.</span>
-              <span style={{ color: C.green, fontWeight: 600 }}>+{data.arena?.change} (+{data.arena?.changePercent}%)</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3*S, marginBottom: 3*S }}>
-              <MetBox l="Vid./dienā" v={data.arena?.avgPerDay} s={S} />
-              <MetBox l="Weekend" v={`${data.arena?.weekendFill}%`} vc={C.green} s={S} />
-            </div>
-            <div style={{ display: 'flex', gap: 2*S, alignItems: 'flex-end', height: 22*S }}>
-              {(data.arena?.weekBars || []).map((h, i) => (
-                <div key={i} className="bar-grow" style={{
-                  flex: 1, borderRadius: 3*S, height: `${h}%`, animationDelay: `${i*0.1}s`,
-                  background: h >= 90 ? C.blue : `rgba(10,132,255,${0.15+h/300})`,
-                }} />
-              ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 5*S, color: C.text3, marginTop: 1*S }}>
-              {['P','O','T','C','Pk','S','Sv'].map(d => <span key={d}>{d}</span>)}
-            </div>
-          </div>
-
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 5*S }}>
-            <Sec t="Analytics · Live" s={S} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3*S, marginBottom: 4*S }}>
-              {(data.analytics?.live || []).map((a, i) => {
-                const lc = i === 0 ? C.blue : i === 1 ? C.red : C.purple;
-                return (
-                  <div key={i} style={{ background: C.card, borderRadius: 8*S, padding: `${3*S}px`, textAlign: 'center' }}>
-                    <div style={{ fontSize: 5*S, color: C.text3 }}>{a.label}</div>
-                    <div className="live-number" style={{ fontSize: 14*S, fontWeight: 700, color: lc }}>{a.value}</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ fontSize: 6*S, color: C.text3, marginBottom: 2*S }}>30d apmeklētāji</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2*S }}>
-              {(data.analytics?.monthly || []).map((a, i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 11*S, fontWeight: 700, color: C.text }}>{a.value}</div>
-                  <div style={{ fontSize: 6*S, color: a.color === '#00ff88' ? C.green : C.red, fontWeight: 600 }}>{a.change}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -351,7 +274,4 @@ function Sec({ t, s, noM, c }) {
 }
 function Pill({ t, c, s }) {
   return <span style={{ fontSize: 5*s, padding: `${1*s}px ${5*s}px`, borderRadius: 20*s, fontWeight: 600, background: `${c}20`, color: c }}>{t}</span>;
-}
-function MetBox({ l, v, vc = '#fff', s }) {
-  return <div style={{ background: '#2c2c2e', borderRadius: 8*s, padding: `${3*s}px`, textAlign: 'center' }}><div style={{ fontSize: 5*s, color: 'rgba(255,255,255,0.35)' }}>{l}</div><div style={{ fontSize: 12*s, fontWeight: 700, color: vc }}>{v}</div></div>;
 }
