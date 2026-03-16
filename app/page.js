@@ -76,7 +76,7 @@ export default async function DashboardPage() {
       {/* ══ 4 COLUMNS ══ */}
       <div style={{
         display: 'grid', gridTemplateColumns: '15% 28% 24% 33%',
-        flex: 1, overflow: 'hidden', position: 'relative',
+        flex: 1, overflow: 'hidden',
       }}>
 
         {/* ══ COL 1: KALENDĀRS ══ */}
@@ -105,38 +105,7 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* ══ CLAUDE BURBULIS — uz kolonnas robežas ══ */}
-        <div style={{
-          position: 'absolute', left: '15%', top: `${12*S}px`,
-          width: `${50*S}px`, height: `calc(100% - ${12*S}px)`,
-          transform: 'translateX(-50%)',
-          zIndex: 30, pointerEvents: 'none',
-        }}>
-          {emails.slice(0, 10).map((email, i) => {
-            const topPct = (i / Math.max(emails.length, 1) * 100).toFixed(1);
-            return (
-              <div key={i} className={`slide-bubble-${i}`} style={{
-                position: 'absolute', left: 0, width: '100%', opacity: 0,
-                top: `${topPct}%`,
-              }}>
-                <div style={{
-                  background: 'rgba(48,209,88,0.18)',
-                  border: '1px solid rgba(48,209,88,0.35)',
-                  borderRadius: 10*S, padding: `${4*S}px ${5*S}px`,
-                }}>
-                  <div style={{ fontSize: 4*S, color: C.green, fontWeight: 700, marginBottom: 2*S, letterSpacing: 0.5 }}>
-                    Claude <span className="arrow-bounce">→</span>
-                  </div>
-                  <div style={{ fontSize: 5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
-                    {email.suggestion || 'Izlasi un izlemj'}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ══ COL 2: JAUNĀKIE 10 E-PASTI ══ */}
+        {/* ══ COL 2: JAUNĀKIE E-PASTI + CLAUDE BURBULIS ZEM KATRA ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px ${5*S}px ${6*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -153,20 +122,44 @@ export default async function DashboardPage() {
             {emails.slice(0, 10).map((email, i) => {
               const accColor = email.accountColor === '#a064ff' ? C.purple : email.accountColor === '#ff2d78' ? C.red : C.teal;
               return (
-                <div key={i} className="email-card" style={{
-                  background: C.card, borderRadius: 8*S,
-                  padding: `${3*S}px ${5*S}px`,
-                  borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
-                  animationDelay: `${i * 0.06}s`,
-                }}>
-                  <div style={{ fontSize: 4.5*S, color: C.text3, marginBottom: 0.5*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {email.subject || '(bez temata)'}
+                <div key={i} style={{ position: 'relative' }}>
+                  {/* E-pasta kartīte */}
+                  <div className="email-card" style={{
+                    background: C.card, borderRadius: 8*S,
+                    padding: `${3*S}px ${5*S}px`,
+                    borderLeft: email.urgent ? `3px solid ${C.orange}` : 'none',
+                    animationDelay: `${i * 0.06}s`,
+                  }}>
+                    <div style={{ fontSize: 4.5*S, color: C.text3, marginBottom: 0.5*S, fontWeight: 500 }}>{email.from || 'Nezināms'}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {email.subject || '(bez temata)'}
+                      </div>
+                      <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
+                        <span style={{ fontSize: 4.5*S, color: C.text3 }}>{email.date}</span>
+                        <Pill t={email.account} c={accColor} s={S} />
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 3*S, alignItems: 'center', flexShrink: 0, marginLeft: 3*S }}>
-                      <span style={{ fontSize: 4.5*S, color: C.text3 }}>{email.date}</span>
-                      <Pill t={email.account} c={accColor} s={S} />
+                  </div>
+
+                  {/* Claude burbulis — zem šī e-pasta, parādās tikai uz 10s */}
+                  <div className={`slide-bubble-${i}`} style={{
+                    position: 'absolute', left: 0, right: 0, top: '100%',
+                    zIndex: 20, opacity: 0,
+                  }}>
+                    <div style={{
+                      background: 'rgba(48,209,88,0.15)',
+                      border: '1px solid rgba(48,209,88,0.3)',
+                      borderRadius: 8*S, padding: `${3*S}px ${5*S}px`,
+                      marginTop: 1*S,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3*S, marginBottom: 1*S }}>
+                        <span style={{ fontSize: 4.5*S, color: C.green, fontWeight: 700, letterSpacing: 0.5 }}>Claude</span>
+                        <span className="arrow-bounce" style={{ fontSize: 5*S, color: C.green }}>→</span>
+                      </div>
+                      <div style={{ fontSize: 5.5*S, color: C.text, fontWeight: 500, lineHeight: 1.35 }}>
+                        {email.suggestion || 'Izlasi un izlemj'}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -175,7 +168,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* ══ COL 3: VAKARDIENAS UN VECĀKI — 15 ══ */}
+        {/* ══ COL 3:  VECĀKI — 15 ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -210,7 +203,6 @@ export default async function DashboardPage() {
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${8*S}px ${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
-          {/* Kavējas */}
           <Sec t="Kavējas · Overdue" s={S} c={(data.overdueTasks || []).length > 0 ? C.red : undefined} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 4*S }}>
             {(data.overdueTasks || []).slice(0, 10).map((task, i) => {
@@ -227,7 +219,6 @@ export default async function DashboardPage() {
             })}
           </div>
 
-          {/* Neuzņemtie */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S, marginBottom: 4*S }}>
             <Sec t="Neuzņemtie · Unassigned" s={S} c={(data.unassignedTasks || []).length > 0 ? C.orange : undefined} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -246,7 +237,6 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Padarītie */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
             <Sec t="Pēdējie padarītie" s={S} c={C.green} />
             {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
