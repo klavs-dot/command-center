@@ -1,37 +1,76 @@
-import { fetchGmailData } from '@/lib/gmail-fetcher';
-import { analyzeEmails } from '@/lib/claude-fetcher';
-
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 30;
 
 export async function GET() {
   const results = {};
 
-  // 1. Dabūjam e-pastus
-  const gmail = await fetchGmailData();
-  results.gmail = gmail ? `${gmail.total} e-pasti` : 'Nav';
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN_1;
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-  // 2. Sūtam Claude analīzei
-  if (gmail?.recent?.length) {
-    const ai = await analyzeEmails(gmail.recent);
-    if (ai) {
-      results.claude = `OK — ${ai.length} ieteikumi`;
-      results.examples = ai.slice(0, 3).map(a => ({
-        subject: a.subject,
-        suggestion: a.suggestion,
-        urgent: a.urgent,
-      }));
-    } else {
-      results.claude = 'Claude neatbildēja';
-    }
-  } else {
-    results.claude = 'Nav e-pastu ko analizēt';
+  // 1. Dabūjam access token
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    }),
+  });
+  const tokenData = await tokenRes.json();
+
+  if (!tokenData.access_token) {
+    return Response.json({ error: 'Token kļūda', details: tokenData });
   }
 
-  results.keys = {
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? 'Ir' : 'NAV',
-    GOOGLE_REFRESH_TOKEN_1: process.env.GOOGLE_REFRESH_TOKEN_1 ? 'Ir' : 'NAV',
-  };
+  results.token = 'OK';
+  const headers = { Authorization: `Bearer ${tokenData.access_token}` };
+
+  // 2. Kāds ir profils?
+  const profileRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', { headers });
+  const profile = await profileRes.json();
+  results.email = profile.emailAddress;
+  results.totalMessages = profile.messagesTotal;
+
+  // 3. Vienkārši is:unread (bez datuma filtra)
+  const unreadRes = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent('is:unread')}&maxResults=5`,
+    { headers }
+  );
+  const unreadData = await unreadRes.json();
+  results.unread_total = unreadData.resultSizeEstimate;
+  results.unread_ids = (unreadData.messages || []).length;
+
+  // 4. is:unread in:inbox
+  const inboxRes = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent('is:unread in:inbox')}&maxResults=5`,
+    { headers }
+  );
+  const inboxData = await inboxRes.json();
+  results.unread_inbox = inboxData.resultSizeEstimate;
+
+  // 5. Ar datuma filtru (kā mūsu kods)
+  const sevenDaysAgo = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000);
+  const queryRes = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(`is:unread after:${sevenDaysAgo}`)}&maxResults=5`,
+    { headers }
+  );
+  const queryData = await queryRes.json();
+  results.unread_7d = queryData.resultSizeEstimate;
+
+  // 6. Pirmā e-pasta detaļas
+  if (unreadData.messages?.[0]) {
+    const msgRes = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${unreadData.messages[0].id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`,
+      { headers }
+    );
+    const msg = await msgRes.json();
+    const subj = msg.payload?.headers?.find(h => h.name === 'Subject')?.value;
+    const from = msg.payload?.headers?.find(h => h.name === 'From')?.value;
+    results.first_email = { subject: subj, from: from };
+  }
 
   return Response.json(results);
 }
