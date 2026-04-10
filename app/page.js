@@ -74,7 +74,7 @@ export default async function DashboardPage() {
 
       {/* ══ 4 COLUMNS: Kalendārs | Padarītie | Neuzņemtie | Kavējas ══ */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '18% 27% 27% 28%',
+        display: 'grid', gridTemplateColumns: '15% 25% 30% 30%',
         flex: 1, overflow: 'hidden',
       }}>
 
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
 
         {/* ══ COL 3: NEUZŅEMTIE ══ */}
         <div style={{
-          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${8*S}px ${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           <Sec t="Neuzņemtie · Unassigned" s={S} c={(data.unassignedTasks || []).length > 0 ? C.orange : undefined} />
