@@ -39,11 +39,14 @@ export async function GET() {
   if (cache.clickup) {
     d.completedTasks = cache.clickup.completed.map(t => {
       const c = mapCompany(t.space || t.list);
-      return { person: mapPerson(t.assignee), task: t.name, company: c.co, companyColor: c.cc };
+      const person = t.assignee ? mapPerson(t.assignee) : mapPerson(t.creator);
+      const taskName = t.description ? `${t.name}: ${t.description}` : t.name;
+      return { person, task: taskName, company: c.co, companyColor: c.cc };
     });
     d.overdueTasks = cache.clickup.overdue.map(t => {
       const c = mapCompany(t.space || t.list);
-      return { person: mapPerson(t.assignee), task: t.name, company: c.co, companyColor: c.cc, daysLate: t.daysLate };
+      const person = t.assignee ? mapPerson(t.assignee) : mapPerson(t.creator);
+      return { person, task: t.name, company: c.co, companyColor: c.cc, daysLate: t.daysLate };
     });
     d.unassignedTasks = cache.clickup.unassigned.map(t => {
       const c = mapCompany(t.space || t.list);
