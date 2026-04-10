@@ -72,9 +72,9 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ══ 2 COLUMNS: KALENDĀRS + CLICKUP ══ */}
+      {/* ══ 4 COLUMNS: Kalendārs | Padarītie | Neuzņemtie | Kavējas ══ */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '30% 70%',
+        display: 'grid', gridTemplateColumns: '18% 27% 27% 28%',
         flex: 1, overflow: 'hidden',
       }}>
 
@@ -104,14 +104,58 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* ══ COL 2: CLICKUP ══ */}
+        {/* ══ COL 2: PADARĪTIE ══ */}
+        <div style={{
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        }}>
+          <Sec t="Pēdējie padarītie" s={S} c={C.green} />
+          {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0, overflow: 'auto' }}>
+            {(data.completedTasks || []).slice(0, 15).map((task, i) => {
+              const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
+                  <span style={{ color: C.green, fontWeight: 600, minWidth: 5*S }}>✓</span>
+                  <span style={{ color: C.text3, minWidth: 14*S, fontWeight: 500 }}>{task.person}</span>
+                  <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
+                  <Pill t={task.company} c={cc} s={S} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ══ COL 3: NEUZŅEMTIE ══ */}
+        <div style={{
+          borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${4*S}px`,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        }}>
+          <Sec t="Neuzņemtie · Unassigned" s={S} c={(data.unassignedTasks || []).length > 0 ? C.orange : undefined} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0, overflow: 'auto' }}>
+            {(data.unassignedTasks || []).slice(0, 15).map((task, i) => {
+              const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
+              return (
+                <div key={i} className="pulse-orange" style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
+                  <span style={{ color: C.orange, fontWeight: 700, minWidth: 5*S }}>?</span>
+                  <span style={{ color: C.text3, minWidth: 14*S }}>—</span>
+                  <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
+                  <Pill t={task.company} c={cc} s={S} />
+                  <span style={{ color: C.orange, fontSize: 5*S, flexShrink: 0, fontWeight: 600 }}>{task.daysWaiting || '?'}d</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ══ COL 4: KAVĒJAS ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${8*S}px ${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           <Sec t="Kavējas · Overdue" s={S} c={(data.overdueTasks || []).length > 0 ? C.red : undefined} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 4*S }}>
-            {(data.overdueTasks || []).slice(0, 10).map((task, i) => {
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0, overflow: 'auto' }}>
+            {(data.overdueTasks || []).slice(0, 15).map((task, i) => {
               const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
               return (
                 <div key={i} className="pulse-red" style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
@@ -123,42 +167,6 @@ export default async function DashboardPage() {
                 </div>
               );
             })}
-          </div>
-
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S, marginBottom: 4*S }}>
-            <Sec t="Neuzņemtie · Unassigned" s={S} c={(data.unassignedTasks || []).length > 0 ? C.orange : undefined} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {(data.unassignedTasks || []).slice(0, 10).map((task, i) => {
-                const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
-                return (
-                  <div key={i} className="pulse-orange" style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
-                    <span style={{ color: C.orange, fontWeight: 700, minWidth: 5*S }}>?</span>
-                    <span style={{ color: C.text3, minWidth: 14*S }}>—</span>
-                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
-                    <Pill t={task.company} c={cc} s={S} />
-                    <span style={{ color: C.orange, fontSize: 5*S, flexShrink: 0, fontWeight: 600 }}>{task.daysWaiting || '?'}d</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
-            <Sec t="Pēdējie padarītie" s={S} c={C.green} />
-            {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {(data.completedTasks || []).slice(0, 10).map((task, i) => {
-                const cc = task.companyColor === '#ff2d78' ? C.red : task.companyColor === '#a064ff' ? C.purple : C.blue;
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3*S, fontSize: 6*S, padding: `${2*S}px 0` }}>
-                    <span style={{ color: C.green, fontWeight: 600, minWidth: 5*S }}>✓</span>
-                    <span style={{ color: C.text3, minWidth: 14*S, fontWeight: 500 }}>{task.person}</span>
-                    <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
-                    <Pill t={task.company} c={cc} s={S} />
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
