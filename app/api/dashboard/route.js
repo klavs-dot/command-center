@@ -5,7 +5,7 @@ import { fetchSheetsData } from '@/lib/sheets-fetcher';
 import { fetchAnalyticsData } from '@/lib/analytics-fetcher';
 import { getMockData } from '@/lib/mock-data';
 
-let cache = { calendar: null, clickup: null, lastFetch: 0 };
+let cache = { calendar: null, clickup: null, lastFetch: 0 }; // reset v2
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
