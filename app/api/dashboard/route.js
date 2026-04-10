@@ -37,6 +37,7 @@ export async function GET() {
 
   // Ieliekam ClickUp datus
   if (cache.clickup) {
+    console.log(`[Route] ClickUp completed: ${cache.clickup.completed?.length}, overdue: ${cache.clickup.overdue?.length}, unassigned: ${cache.clickup.unassigned?.length}`);
     d.completedTasks = cache.clickup.completed.map(t => {
       const c = mapCompany(t.space || t.list);
       const person = t.assignee ? mapPerson(t.assignee) : mapPerson(t.creator);
