@@ -1,11 +1,9 @@
 // app/api/dashboard/route.js
 import { fetchCalendarData } from '@/lib/calendar-fetcher';
-import { fetchClickUpData, mapCompany, mapPerson } from '@/lib/clickup-fetcher';
-import { fetchSheetsData } from '@/lib/sheets-fetcher';
-import { fetchAnalyticsData } from '@/lib/analytics-fetcher';
+import { fetchAsanaData, mapProject, shortName } from '@/lib/asana-fetcher';
 import { getMockData } from '@/lib/mock-data';
 
-let cache = { calendar: null, clickup: null, lastFetch: 0 }; // reset v2
+let cache = { calendar: null, asana: null, lastFetch: 0 };
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -17,60 +15,52 @@ export async function GET() {
   const fiveMin = 5 * 60 * 1000;
 
   // ══════════════════════════
-  // 1. CALENDAR + CLICKUP (ik 5 min, bezmaksas)
+  // CALENDAR + ASANA (ik 5 min)
   // ══════════════════════════
   if (now - cache.lastFetch > fiveMin) {
     const cal = await fetchCalendarData();
     if (cal) cache.calendar = cal;
 
-    const clickup = await fetchClickUpData();
-    if (clickup) cache.clickup = clickup;
+    const asana = await fetchAsanaData();
+    if (asana) cache.asana = asana;
 
     cache.lastFetch = now;
   }
 
-  // Ieliekam Calendar datus
+  // Calendar
   if (cache.calendar) {
     d.calendar = cache.calendar.calendar;
     if (cache.calendar.travel?.length) d.travel = cache.calendar.travel;
   }
 
-  // Ieliekam ClickUp datus
-  if (cache.clickup) {
-    console.log(`[Route] ClickUp completed: ${cache.clickup.completed?.length}, overdue: ${cache.clickup.overdue?.length}, unassigned: ${cache.clickup.unassigned?.length}`);
-    d.completedTasks = cache.clickup.completed.map(t => {
-      const c = mapCompany(t.space || t.list);
-      const person = t.assignee ? mapPerson(t.assignee) : mapPerson(t.creator);
-      const taskName = t.description ? `${t.name}: ${t.description}` : t.name;
-      return { person, task: taskName, company: c.co, companyColor: c.cc };
+  // Asana
+  if (cache.asana) {
+    d.completedTasks = cache.asana.completed.map(t => {
+      const p = mapProject(t.project);
+      return { person: shortName(t.assignee), task: t.name, notes: t.notes, section: t.section, company: p.co, companyColor: p.cc, completedAt: t.completedAt };
     });
-    d.overdueTasks = cache.clickup.overdue.map(t => {
-      const c = mapCompany(t.space || t.list);
-      const person = t.assignee ? mapPerson(t.assignee) : mapPerson(t.creator);
-      return { person, task: t.name, company: c.co, companyColor: c.cc, daysLate: t.daysLate };
+    d.overdueTasks = cache.asana.overdue.map(t => {
+      const p = mapProject(t.project);
+      return { person: shortName(t.assignee), task: t.name, company: p.co, companyColor: p.cc, daysLate: t.daysLate, section: t.section };
     });
-    d.unassignedTasks = cache.clickup.unassigned.map(t => {
-      const c = mapCompany(t.space || t.list);
-      return { task: t.name, company: c.co, companyColor: c.cc, daysWaiting: t.daysWaiting };
+    d.unassignedTasks = cache.asana.unassigned.map(t => {
+      const p = mapProject(t.project);
+      return { task: t.name, company: p.co, companyColor: p.cc, dueDate: t.dueDate, section: t.section };
     });
+    d.upcomingTasks = cache.asana.upcoming.map(t => {
+      const p = mapProject(t.project);
+      return { person: shortName(t.assignee), task: t.name, company: p.co, companyColor: p.cc, dueDate: t.dueDate, section: t.section };
+    });
+    d.stats = {
+      totalActive: cache.asana.totalActive,
+      totalCompleted: cache.asana.totalCompleted,
+    };
   }
 
-  // ══════════════════════════
-  // 2. SHEETS + ANALYTICS (bezmaksas)
-  // ══════════════════════════
-  const sheets = await fetchSheetsData();
-  if (sheets?.social) d.social = sheets.social;
-  if (sheets?.arena) d.arena = sheets.arena;
-
-  const analytics = await fetchAnalyticsData();
-  if (analytics) d.analytics = analytics;
-
-  // ══════════════════════════
   // STATUS
-  // ══════════════════════════
   const src = [];
   if (cache.calendar) src.push('cal');
-  if (cache.clickup) src.push('clickup');
+  if (cache.asana) src.push('asana');
   d.source = src.length ? `live: ${src.join('+')}` : 'mock';
   d.lastUpdated = new Date().toISOString();
 
