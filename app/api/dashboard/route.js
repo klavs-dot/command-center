@@ -58,6 +58,8 @@ export async function GET() {
     d.stats = {
       totalActive: cache.asana.totalActive,
       totalCompleted: cache.asana.totalCompleted,
+      monthStats: cache.asana.monthStats,
+      projectNames: cache.asana.projectNames,
     };
   }
 
