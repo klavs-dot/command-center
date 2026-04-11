@@ -29,11 +29,11 @@ export default function RootLayout({ children }) {
             }
           }, 1000);
 
-          // Auto-refresh ik 2 min (120s) — smooth pārlāde
+          // Auto-refresh ik 1 min (60s) — smooth pārlāde
           setInterval(function(){
             document.body.style.opacity = '0.7';
             setTimeout(function(){ location.reload(); }, 300);
-          }, 120000);
+          }, 60000);
         `}} />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', background: '#0a0a0a' }}>
