@@ -24,13 +24,29 @@ const C = {
   blue: '#0a84ff', green: '#30d158', red: '#ff375f', orange: '#ff9f0a', purple: '#bf5af2', teal: '#64d2ff', yellow: '#ffd60a',
 };
 
+// Personas krāsas
+const PEOPLE = {
+  'Klāvs': '#0a84ff',
+  'Paula': '#bf5af2',
+  'Elizab.': '#ff9f0a',
+};
+
 function daysUntilStr(dateStr) {
   if (!dateStr) return '';
   const d = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
-  if (d < 0) return `${Math.abs(d)}d ago`;
+  if (d < 0) return `${Math.abs(d)}d kavē`;
   if (d === 0) return 'šodien';
   if (d === 1) return 'rīt';
   return `${d}d`;
+}
+
+function daysColor(dateStr) {
+  if (!dateStr) return C.text3;
+  const d = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+  if (d < 0) return C.red;
+  if (d === 0) return C.orange;
+  if (d <= 3) return C.yellow;
+  return C.green;
 }
 
 export default async function DashboardPage() {
@@ -39,6 +55,30 @@ export default async function DashboardPage() {
   const dateStr = formatRigaDate();
   const isLive = data.source?.includes('live');
   const stats = data.stats || {};
+
+  // Grupējam upcoming uzdevumus pa personām
+  const upcoming = data.upcomingTasks || [];
+  const personTasks = {};
+  for (const name of Object.keys(PEOPLE)) {
+    personTasks[name] = [];
+  }
+  for (const t of upcoming) {
+    const p = t.person || '—';
+    let matched = false;
+    for (const name of Object.keys(PEOPLE)) {
+      if (p.toLowerCase().startsWith(name.toLowerCase().replace('.', ''))) {
+        personTasks[name].push(t);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      // Pamēģinam match pēc pilnā vārda
+      if (p.toLowerCase().includes('klāv') || p.toLowerCase().includes('klav')) personTasks['Klāvs'].push(t);
+      else if (p.toLowerCase().includes('paul')) personTasks['Paula'].push(t);
+      else if (p.toLowerCase().includes('eliz') || p.toLowerCase().includes('elīz')) personTasks['Elizab.'].push(t);
+    }
+  }
 
   return (
     <div style={{
@@ -65,11 +105,6 @@ export default async function DashboardPage() {
             <span style={{ width: 4*S, height: 4*S, borderRadius: '50%', background: isLive ? C.green : C.red, display: 'inline-block' }} />
             {isLive ? 'LIVE' : 'MOCK'}
           </span>
-          {stats.totalActive > 0 && (
-            <span style={{ fontSize: 5*S, color: C.text3, fontWeight: 500 }}>
-              {stats.totalActive} aktīvi · {stats.totalCompleted || 0} pabeigti
-            </span>
-          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5*S }}>
           {(data.travel || []).map((t, i) => {
@@ -89,7 +124,7 @@ export default async function DashboardPage() {
 
       {/* ══ 4 COLUMNS ══ */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '17% 28% 27% 28%',
+        display: 'grid', gridTemplateColumns: '15% 35% 22% 28%',
         flex: 1, overflow: 'hidden',
       }}>
 
@@ -103,7 +138,7 @@ export default async function DashboardPage() {
                 <div style={{ fontSize: 6.5*S, fontWeight: 700, color: dc, marginBottom: 2*S }}>{day.day}</div>
                 {(day.events || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3, paddingLeft: 4*S }}>Nav notikumu</div>}
                 {(day.events || []).map((ev, ei) => {
-                  const ec = ev.color === '#a064ff' ? C.purple : ev.color === '#ff2d78' ? C.red : ev.color === '#00ff88' ? C.green : ev.color === '#bf5af2' ? C.purple : ev.color === '#ff375f' ? C.red : ev.color === '#30d158' ? C.green : C.blue;
+                  const ec = ev.color === '#bf5af2' ? C.purple : ev.color === '#ff375f' ? C.red : ev.color === '#30d158' ? C.green : C.blue;
                   return (
                     <div key={ei} style={{
                       background: C.card, borderRadius: 6*S, padding: `${3*S}px ${5*S}px`,
@@ -119,19 +154,58 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* ══ COL 2: PADARĪTIE ══ */}
+        {/* ══ COL 2: UZŅEMTIE — MATRICA PA PERSONĀM ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
-          <ColHeader t="Padarītie" emoji="✅" c={C.green} s={S} count={(data.completedTasks || []).length} />
-          {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${1*S}px`, overflow: 'auto' }}>
-            {(data.completedTasks || []).slice(0, 15).map((task, i) => (
-              <TaskRow key={i} icon="✓" iconColor={C.green} person={task.person} task={task.task}
-                company={task.company} companyColor={task.companyColor} s={S} C={C}
-                sub={task.notes} dimTask />
-            ))}
+          <ColHeader t="Uzņemtie" emoji="👥" c={C.blue} s={S} />
+          <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: `${4*S}px` }}>
+            {Object.entries(PEOPLE).map(([name, color]) => {
+              const tasks = personTasks[name] || [];
+              return (
+                <div key={name}>
+                  {/* Personas header */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 3*S, marginBottom: 2*S,
+                  }}>
+                    <span style={{
+                      width: 7*S, height: 7*S, borderRadius: '50%', background: `${color}25`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 4*S, fontWeight: 700, color: color, border: `1px solid ${color}40`,
+                    }}>
+                      {name[0]}
+                    </span>
+                    <span style={{ fontSize: 6*S, fontWeight: 700, color: color }}>{name}</span>
+                    <span style={{ fontSize: 4.5*S, color: C.text3 }}>
+                      {tasks.length === 0 ? 'nav uzdevumu' : `${tasks.length} uzdevumi`}
+                    </span>
+                  </div>
+                  {/* Personas uzdevumi */}
+                  {tasks.length === 0 && (
+                    <div style={{ fontSize: 4.5*S, color: C.text3, paddingLeft: 10*S, marginBottom: 1*S }}>—</div>
+                  )}
+                  {tasks.map((t, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 2*S,
+                      paddingLeft: 10*S, fontSize: 5*S, padding: `${1*S}px 0 ${1*S}px ${10*S}px`,
+                    }}>
+                      <span style={{ color: daysColor(t.dueDate), fontSize: 4*S }}>●</span>
+                      <span style={{ color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {t.task}
+                      </span>
+                      <Pill t={t.company} c={t.companyColor} s={S} />
+                      <span style={{
+                        color: daysColor(t.dueDate), fontSize: 4.5*S, fontWeight: 600,
+                        minWidth: 10*S, textAlign: 'right', flexShrink: 0,
+                      }}>
+                        {daysUntilStr(t.dueDate)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -143,26 +217,51 @@ export default async function DashboardPage() {
           <ColHeader t="Neuzņemtie" emoji="⚠️" c={C.orange} s={S} count={(data.unassignedTasks || []).length} />
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${1*S}px`, overflow: 'auto' }}>
             {(data.unassignedTasks || []).slice(0, 15).map((task, i) => (
-              <TaskRow key={i} icon="?" iconColor={C.orange} person="—" task={task.task}
-                company={task.company} companyColor={task.companyColor} s={S} C={C}
-                right={daysUntilStr(task.dueDate)} rightColor={C.orange} />
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2*S, fontSize: 5.5*S, padding: `${1.5*S}px 0` }}>
+                <span style={{ color: C.orange, fontWeight: 700, fontSize: 5*S, minWidth: 4*S }}>?</span>
+                <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
+                <Pill t={task.company} c={task.companyColor} s={S} />
+                <span style={{ color: daysColor(task.dueDate), fontSize: 4.5*S, fontWeight: 600, minWidth: 8*S, textAlign: 'right', flexShrink: 0 }}>
+                  {daysUntilStr(task.dueDate)}
+                </span>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* ══ COL 4: KAVĒJAS ══ */}
+        {/* ══ COL 4: KAVĒJAS + PADARĪTIE ══ */}
         <div style={{
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${8*S}px ${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
+          {/* KAVĒJAS */}
           <ColHeader t="Kavējas" emoji="🔥" c={C.red} s={S} count={(data.overdueTasks || []).length} />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${1*S}px`, overflow: 'auto' }}>
-            {(data.overdueTasks || []).slice(0, 15).map((task, i) => (
-              <TaskRow key={i} icon="!" iconColor={C.red} person={task.person || '—'} task={task.task}
-                company={task.company} companyColor={task.companyColor} s={S} C={C}
-                right={`-${task.daysLate}d`} rightColor={C.red}
-                personColor={task.daysLate >= 4 ? C.red : C.orange} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: `${1*S}px`, marginBottom: 4*S }}>
+            {(data.overdueTasks || []).slice(0, 10).map((task, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2*S, fontSize: 5.5*S, padding: `${1.5*S}px 0` }}>
+                <span style={{ color: C.red, fontWeight: 700, fontSize: 5*S, minWidth: 4*S }}>!</span>
+                <span style={{ color: task.daysLate >= 4 ? C.red : C.orange, minWidth: 12*S, fontWeight: 600, fontSize: 5*S }}>{task.person || '—'}</span>
+                <span style={{ color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
+                <Pill t={task.company} c={task.companyColor} s={S} />
+                <span style={{ color: C.red, fontSize: 4.5*S, fontWeight: 700, minWidth: 8*S, textAlign: 'right', flexShrink: 0 }}>-{task.daysLate}d</span>
+              </div>
             ))}
+          </div>
+
+          {/* PADARĪTIE */}
+          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 4*S }}>
+            <ColHeader t="Padarītie" emoji="✅" c={C.green} s={S} count={(data.completedTasks || []).length} />
+            {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: `${1*S}px` }}>
+              {(data.completedTasks || []).slice(0, 8).map((task, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2*S, fontSize: 5*S, padding: `${1*S}px 0` }}>
+                  <span style={{ color: C.green, fontWeight: 600, minWidth: 4*S }}>✓</span>
+                  <span style={{ color: C.text3, minWidth: 12*S, fontWeight: 500, fontSize: 4.5*S }}>{task.person || '—'}</span>
+                  <span style={{ color: C.text3, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.task}</span>
+                  <Pill t={task.company} c={task.companyColor} s={S} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -181,20 +280,6 @@ function ColHeader({ t, emoji, c, s, count }) {
           padding: `${0.5*s}px ${4*s}px`, borderRadius: 20*s, fontWeight: 700,
         }}>{count}</span>
       )}
-    </div>
-  );
-}
-
-function TaskRow({ icon, iconColor, person, task, company, companyColor, s, C, right, rightColor, personColor, sub, dimTask }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 2*s, fontSize: 5.5*s, padding: `${1.5*s}px 0`, minHeight: 7*s }}>
-      <span style={{ color: iconColor, fontWeight: 700, minWidth: 4*s, fontSize: 5*s }}>{icon}</span>
-      <span style={{ color: personColor || C.text3, minWidth: 13*s, fontWeight: 600, fontSize: 5*s }}>{person}</span>
-      <span style={{ color: dimTask ? C.text2 : C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: 5.5*s }}>
-        {task}
-      </span>
-      <Pill t={company} c={companyColor} s={s} />
-      {right && <span style={{ color: rightColor || C.text3, fontSize: 4.5*s, flexShrink: 0, fontWeight: 700, minWidth: 8*s, textAlign: 'right' }}>{right}</span>}
     </div>
   );
 }
