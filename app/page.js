@@ -124,7 +124,7 @@ export default async function DashboardPage() {
 
       {/* ══ 3 COLUMNS ══ */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '15% 40% 45%',
+        display: 'grid', gridTemplateColumns: '15% 60% 25%',
         flex: 1, overflow: 'hidden',
       }}>
 
