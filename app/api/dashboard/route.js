@@ -18,10 +18,14 @@ export async function GET() {
   // CALENDAR + ASANA (ik 5 min)
   // ══════════════════════════
   if (now - cache.lastFetch > fiveMin) {
+    console.log('[Route] Fetching fresh data...');
+    console.log('[Route] ASANA_ACCESS_TOKEN:', process.env.ASANA_ACCESS_TOKEN ? `set (${process.env.ASANA_ACCESS_TOKEN.substring(0, 10)}...)` : 'NOT SET');
+    
     const cal = await fetchCalendarData();
     if (cal) cache.calendar = cal;
 
     const asana = await fetchAsanaData();
+    console.log('[Route] Asana result:', asana ? `${asana.completed?.length} completed, ${asana.overdue?.length} overdue` : 'null');
     if (asana) cache.asana = asana;
 
     cache.lastFetch = now;
