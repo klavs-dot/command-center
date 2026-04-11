@@ -12,12 +12,12 @@ export async function GET() {
   const mock = getMockData();
   let d = { ...mock, source: 'mock' };
   const now = Date.now();
-  const fiveMin = 5 * 60 * 1000;
+  const oneMin = 60 * 1000;
 
   // ══════════════════════════
-  // CALENDAR + ASANA (ik 5 min)
+  // CALENDAR + ASANA (ik 1 min)
   // ══════════════════════════
-  if (now - cache.lastFetch > fiveMin) {
+  if (now - cache.lastFetch > oneMin) {
     console.log('[Route] Fetching fresh data...');
     console.log('[Route] ASANA_ACCESS_TOKEN:', process.env.ASANA_ACCESS_TOKEN ? `set (${process.env.ASANA_ACCESS_TOKEN.substring(0, 10)}...)` : 'NOT SET');
     
