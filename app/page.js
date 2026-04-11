@@ -107,18 +107,10 @@ export default async function DashboardPage() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5*S }}>
-          {(data.travel || []).map((t, i) => {
-            const tc = t.days === 0 ? C.green : t.days <= 7 ? C.orange : C.text3;
-            return (
-              <div key={i} style={{
-                background: `${tc}15`, padding: `${3*S}px ${8*S}px`, borderRadius: 20*S,
-                display: 'flex', alignItems: 'center', gap: 4*S, border: `1px solid ${tc}30`,
-              }}>
-                <span style={{ width: 4*S, height: 4*S, borderRadius: '50%', background: tc, display: 'inline-block' }} />
-                <span style={{ color: tc, fontSize: 6*S, fontWeight: 600 }}>{t.days}d — {t.label}</span>
-              </div>
-            );
-          })}
+          <StatBadge label="Pabeigti" value={stats.totalCompleted || 0} color={C.green} s={S} />
+          <StatBadge label="Nepabeigti" value={stats.totalActive || 0} color={C.blue} s={S} />
+          <StatBadge label="Kavējas" value={(data.overdueTasks || []).length} color={(data.overdueTasks || []).length > 0 ? C.red : C.green} s={S} />
+          <StatBadge label="Kopā" value={(stats.totalActive || 0) + (stats.totalCompleted || 0)} color={C.text3} s={S} />
         </div>
       </div>
 
@@ -286,4 +278,16 @@ function ColHeader({ t, emoji, c, s, count }) {
 
 function Pill({ t, c, s }) {
   return <span style={{ fontSize: 4.5*s, padding: `${0.5*s}px ${4*s}px`, borderRadius: 20*s, fontWeight: 600, background: `${c}18`, color: c, flexShrink: 0 }}>{t}</span>;
+}
+
+function StatBadge({ label, value, color, s }) {
+  return (
+    <div style={{
+      background: `${color}12`, border: `1px solid ${color}25`, borderRadius: 8*s,
+      padding: `${3*s}px ${6*s}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 20*s,
+    }}>
+      <span style={{ fontSize: 4.5*s, color: `${color}99`, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</span>
+      <span style={{ fontSize: 10*s, fontWeight: 700, color: color, lineHeight: 1.1 }}>{value}</span>
+    </div>
+  );
 }
