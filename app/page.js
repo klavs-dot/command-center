@@ -129,27 +129,37 @@ export default async function DashboardPage() {
         flex: 1, overflow: 'hidden',
       }}>
 
-        {/* ══ COL 1: KALENDĀRS ══ */}
-        <div style={{ overflow: 'hidden', padding: `${5*S}px ${5*S}px` }}>
-          <ColHeader t="Kalendārs" emoji="📅" s={S} />
-          {(data.calendar || []).map((day, di) => {
-            const dc = di === 0 ? C.red : di === 1 ? C.orange : C.green;
+        {/* ══ COL 1: PASĀKUMI ══ */}
+        <div style={{ overflow: 'auto', padding: `${5*S}px ${5*S}px` }}>
+          <ColHeader t="Pasākumi" emoji="🎪" c={C.purple} s={S} count={(data.events || []).length} />
+          {(data.events || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav tuvāko pasākumu</div>}
+          {(data.events || []).map((ev, i) => {
+            const d = new Date(ev.dueDate);
+            const dayNames = ['Svētdiena', 'Pirmdiena', 'Otrdiena', 'Trešdiena', 'Ceturtdiena', 'Piektdiena', 'Sestdiena'];
+            const monthNames = ['janv.', 'febr.', 'marts', 'apr.', 'maijs', 'jūn.', 'jūl.', 'aug.', 'sept.', 'okt.', 'nov.', 'dec.'];
+            const dayName = dayNames[d.getDay()];
+            const dateStr = `${d.getDate()}. ${monthNames[d.getMonth()]}`;
+            const daysUntil = Math.ceil((d - new Date()) / 86400000);
+            const urgency = daysUntil <= 3 ? C.red : daysUntil <= 7 ? C.orange : daysUntil <= 14 ? C.yellow : C.green;
+            const name = ev.task.replace(/^PASĀKUMS[\s-]*/i, '').replace(/^PASĀKUMS/i, '');
+
             return (
-              <div key={di} style={{ marginBottom: 5*S }}>
-                <div style={{ fontSize: 6.5*S, fontWeight: 700, color: dc, marginBottom: 2*S }}>{day.day}</div>
-                {(day.events || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3, paddingLeft: 4*S }}>Nav notikumu</div>}
-                {(day.events || []).map((ev, ei) => {
-                  const ec = ev.color === '#bf5af2' ? C.purple : ev.color === '#ff375f' ? C.red : ev.color === '#30d158' ? C.green : C.blue;
-                  return (
-                    <div key={ei} style={{
-                      background: C.card, borderRadius: 6*S, padding: `${3*S}px ${5*S}px`,
-                      marginBottom: 2*S, borderLeft: `2px solid ${ec}`,
-                    }}>
-                      <div style={{ fontSize: 6*S, fontWeight: 600, color: C.text }}>{ev.time} {ev.title}</div>
-                      <div style={{ fontSize: 4.5*S, color: C.text3 }}>{ev.platform} · {ev.duration}</div>
-                    </div>
-                  );
-                })}
+              <div key={i} style={{
+                background: C.card, borderRadius: 6*S, padding: `${4*S}px ${5*S}px`,
+                marginBottom: 3*S, borderLeft: `3px solid ${urgency}`,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 1*S }}>
+                  <span style={{ fontSize: 4.5*S, fontWeight: 700, color: urgency, textTransform: 'uppercase' }}>{dayName}</span>
+                  <span style={{
+                    fontSize: 4*S, fontWeight: 700, color: urgency,
+                    background: `${urgency}20`, padding: `${0.5*S}px ${3*S}px`, borderRadius: 10*S,
+                  }}>{daysUntil}d</span>
+                </div>
+                <div style={{ fontSize: 4.5*S, color: C.text3, marginBottom: 1*S }}>{dateStr}</div>
+                <div style={{ fontSize: 5.5*S, fontWeight: 600, color: C.text, lineHeight: 1.3 }}>{name}</div>
+                {ev.assignee && ev.assignee !== '—' && (
+                  <div style={{ fontSize: 4*S, color: C.text3, marginTop: 1*S }}>{ev.assignee}</div>
+                )}
               </div>
             );
           })}

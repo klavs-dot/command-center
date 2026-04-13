@@ -42,6 +42,10 @@ export async function GET() {
       const p = mapProject(t.project);
       return { person: shortName(t.assignee), task: t.name, company: p.co, companyColor: p.cc, dueDate: t.dueDate, section: t.section };
     });
+    d.events = asana.events.map(t => {
+      const p = mapProject(t.project);
+      return { task: t.name, assignee: shortName(t.assignee), dueDate: t.dueDate, company: p.co, companyColor: p.cc };
+    });
     d.stats = {
       totalActive: asana.totalActive,
       totalCompleted: asana.totalCompleted,
