@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   const isLive = data.source?.includes('live');
   const stats = data.stats || {};
   const ms = stats.monthStats || {};
-  const projectNames = (stats.projectNames || []).join(' · ') || 'NNKBV Ofiss';
+  const projectName = (stats.projectNames || [])[0] || 'NNKBV Ofiss';
 
   // Grupējam upcoming pa personām un kārtojam pēc daudzuma
   const upcoming = data.upcomingTasks || [];
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
             background: 'rgba(100,210,255,0.1)', padding: `${2*S}px ${8*S}px`, borderRadius: 6*S,
             border: '1px solid rgba(100,210,255,0.2)',
           }}>
-            {projectNames}
+            {projectName}
           </span>
         </div>
 
