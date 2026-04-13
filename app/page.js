@@ -112,14 +112,23 @@ export default async function DashboardPage() {
           </span>
         </div>
 
-        {/* Labā puse: mēneša stats */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1*S }}>
-          <span style={{ fontSize: 5*S, color: C.text2 }}>
-            Pagājušajā mēnesī <span style={{ color: C.orange, fontWeight: 700 }}>{ms.lastMonthName || '—'}</span> tika izveidoti <span style={{ fontWeight: 700, color: C.text }}>{ms.lastMonthCreated || 0}</span> uzdevumi un <span style={{ fontWeight: 700, color: C.green }}>{ms.lastMonthCompleted || 0}</span> padarīti.
-          </span>
-          <span style={{ fontSize: 10*S, color: C.text, fontWeight: 600 }}>
-            Šomēnes mums jau ir <span style={{ fontWeight: 800, color: C.blue }}>{ms.thisMonthCreated || 0}</span> uzdevumi un jau <span style={{ fontWeight: 800, color: C.green }}>{ms.thisMonthCompleted || 0}</span> esam izdarījuši.
-          </span>
+        {/* Labā puse: mēneša stats + fullscreen */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6*S }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1*S }}>
+            <span style={{ fontSize: 5*S, color: C.text2 }}>
+              Pagājušajā mēnesī <span style={{ color: C.orange, fontWeight: 700 }}>{ms.lastMonthName || '—'}</span> tika izveidoti <span style={{ fontWeight: 700, color: C.text }}>{ms.lastMonthCreated || 0}</span> uzdevumi un <span style={{ fontWeight: 700, color: C.green }}>{ms.lastMonthCompleted || 0}</span> padarīti.
+            </span>
+            <span style={{ fontSize: 10*S, color: C.text, fontWeight: 600 }}>
+              Šomēnes mums jau ir <span style={{ fontWeight: 800, color: C.blue }}>{ms.thisMonthCreated || 0}</span> uzdevumi un jau <span style={{ fontWeight: 800, color: C.green }}>{ms.thisMonthCompleted || 0}</span> esam izdarījuši.
+            </span>
+          </div>
+          <button id="fs-btn" style={{
+            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+            color: C.text2, fontSize: 5*S, fontWeight: 600, padding: `${3*S}px ${8*S}px`,
+            borderRadius: 6*S, cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>
+            ⛶ Full Screen
+          </button>
         </div>
       </div>
 

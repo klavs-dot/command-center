@@ -34,6 +34,23 @@ export default function RootLayout({ children }) {
             document.body.style.opacity = '0.7';
             setTimeout(function(){ location.reload(); }, 300);
           }, 60000);
+
+          // Full Screen poga
+          document.addEventListener('click', function(e){
+            var btn = e.target.closest('#fs-btn');
+            if(!btn) return;
+            if(!document.fullscreenElement){
+              document.documentElement.requestFullscreen().catch(function(){});
+              btn.textContent = '✕ Exit';
+            } else {
+              document.exitFullscreen();
+              btn.textContent = '⛶ Full Screen';
+            }
+          });
+          document.addEventListener('fullscreenchange', function(){
+            var btn = document.getElementById('fs-btn');
+            if(btn) btn.textContent = document.fullscreenElement ? '✕ Exit' : '⛶ Full Screen';
+          });
         `}} />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', background: '#0a0a0a' }}>
