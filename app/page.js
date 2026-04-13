@@ -26,8 +26,9 @@ const C = {
 
 const PEOPLE = {
   'Klāvs': '#0a84ff',
+  'Elizabete': '#ff9f0a',
   'Paula': '#bf5af2',
-  'Elizab.': '#ff9f0a',
+  'Intars': '#30d158',
 };
 
 function daysUntilStr(dateStr) {
