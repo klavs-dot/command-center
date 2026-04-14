@@ -257,7 +257,7 @@ export default async function DashboardPage() {
             <ColHeader t="Padarītie" emoji="✅" c={C.green} s={S} count={(data.completedTasks || []).length} />
             {(data.completedTasks || []).length === 0 && <div style={{ fontSize: 5*S, color: C.text3 }}>Nav pabeigtu uzdevumu</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: `${1*S}px` }}>
-              {(data.completedTasks || []).slice(0, 20).map((task, i) => (
+              {(data.completedTasks || []).slice(0, 35).map((task, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2*S, fontSize: 5*S, padding: `${1*S}px 0` }}>
                   <span style={{ color: C.green, fontWeight: 600, minWidth: 4*S }}>✓</span>
                   <span style={{ color: C.text3, minWidth: 12*S, fontWeight: 500, fontSize: 4.5*S }}>{task.person || '—'}</span>
