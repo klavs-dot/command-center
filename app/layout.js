@@ -11,14 +11,13 @@ export default function RootLayout({ children }) {
           @keyframes liveDot{0%,100%{box-shadow:0 0 0 0 rgba(48,209,88,0.6)}50%{box-shadow:0 0 10px 5px rgba(48,209,88,0)}}
           @keyframes pulseRed{0%,100%{background:transparent}50%{background:rgba(255,55,95,0.08)}}
           @keyframes pulseOrange{0%,100%{background:transparent}50%{background:rgba(255,159,10,0.08)}}
-          @keyframes fadeInUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
           @keyframes slideInLeft{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
           .live-badge{animation:liveBlink 2s ease-in-out infinite}
           .live-dot{animation:liveDot 2s ease-in-out infinite}
           .pulse-red{animation:pulseRed 3s ease-in-out infinite;border-radius:6px}
           .pulse-orange{animation:pulseOrange 3.5s ease-in-out infinite;border-radius:6px}
           .cal-item{animation:slideInLeft 0.4s ease-out both}
-          body{transition:opacity 0.3s ease}
+          #fs-btn:hover{background:rgba(255,255,255,0.15)!important}
         `}} />
         <script dangerouslySetInnerHTML={{ __html: `
           // Pulkstenis katru sekundi
@@ -29,27 +28,41 @@ export default function RootLayout({ children }) {
             }
           }, 1000);
 
-          // Auto-refresh ik 1 min (60s) — smooth pārlāde
+          // Smart refresh — fetch jauno lapu un swap DOM, saglabā fullscreen
           setInterval(function(){
-            document.body.style.opacity = '0.7';
-            setTimeout(function(){ location.reload(); }, 300);
+            fetch(location.href)
+              .then(function(r){ return r.text(); })
+              .then(function(html){
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var newBody = doc.querySelector('body');
+                if(newBody){
+                  document.body.innerHTML = newBody.innerHTML;
+                }
+              })
+              .catch(function(e){ console.log('Refresh error:', e); });
           }, 60000);
 
           // Full Screen poga
           document.addEventListener('click', function(e){
             var btn = e.target.closest('#fs-btn');
             if(!btn) return;
-            if(!document.fullscreenElement){
-              document.documentElement.requestFullscreen().catch(function(){});
-              btn.textContent = '✕ Exit';
+            if(!document.fullscreenElement && !document.webkitFullscreenElement){
+              var el = document.documentElement;
+              if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
+              else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
             } else {
-              document.exitFullscreen();
-              btn.textContent = '⛶ Full Screen';
+              if(document.exitFullscreen) document.exitFullscreen();
+              else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
           });
           document.addEventListener('fullscreenchange', function(){
             var btn = document.getElementById('fs-btn');
             if(btn) btn.textContent = document.fullscreenElement ? '✕ Exit' : '⛶ Full Screen';
+          });
+          document.addEventListener('webkitfullscreenchange', function(){
+            var btn = document.getElementById('fs-btn');
+            if(btn) btn.textContent = (document.webkitFullscreenElement) ? '✕ Exit' : '⛶ Full Screen';
           });
         `}} />
       </head>
