@@ -18,42 +18,6 @@ export default function RootLayout({ children }) {
           .pulse-orange{animation:pulseOrange 3.5s ease-in-out infinite;border-radius:6px}
           .cal-item{animation:slideInLeft 0.4s ease-out both}
           #fs-btn:hover{background:rgba(255,255,255,0.15)!important}
-
-          /* ═══ DESKTOP / TV ═══ */
-          .dash-root{height:100vh;overflow:hidden}
-          .dash-grid{display:grid;grid-template-columns:15% 60% 25%;flex:1;overflow:hidden}
-          .dash-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:nowrap;gap:8px}
-          .dash-header-left{display:flex;align-items:center;gap:20px;flex-wrap:nowrap;flex-shrink:0}
-          .dash-header-right{display:flex;align-items:center;gap:15px;flex:1;justify-content:flex-end}
-          .dash-stats{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-          .dash-stats-big{font-size:25px}
-          .dash-stats-small{font-size:12.5px}
-          .dash-clock{font-size:45px}
-          .dash-col{overflow:auto;padding:12.5px}
-          .dash-col-right{overflow:auto;padding:12.5px 20px 12.5px 12.5px}
-
-          /* ═══ TABLET ═══ */
-          @media(max-width:1024px){
-            .dash-root{height:auto!important;overflow:auto!important}
-            .dash-grid{grid-template-columns:1fr!important;overflow:visible!important}
-            .dash-col,.dash-col-right{border-left:none!important;border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 12px;overflow:visible!important}
-            .dash-header{flex-direction:column;align-items:flex-start;padding:10px 12px!important;flex-wrap:wrap}
-            .dash-header-left{gap:10px;flex-wrap:wrap}
-            .dash-header-right{width:100%;justify-content:space-between}
-            .dash-stats{align-items:flex-start}
-            .dash-stats-big{font-size:16px!important}
-            .dash-stats-small{font-size:11px!important}
-            .dash-clock{font-size:28px!important}
-            #fs-btn{display:none!important}
-            body{overflow:auto!important}
-          }
-          /* ═══ PHONE ═══ */
-          @media(max-width:480px){
-            .dash-stats-big{font-size:13px!important}
-            .dash-stats-small{font-size:10px!important}
-            .dash-clock{font-size:22px!important}
-            .dash-header-left{gap:6px}
-          }
         `}} />
         <script dangerouslySetInnerHTML={{ __html: `
           // Pulkstenis katru sekundi
