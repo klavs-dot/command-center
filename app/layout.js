@@ -64,6 +64,63 @@ export default function RootLayout({ children }) {
             var btn = document.getElementById('fs-btn');
             if(btn) btn.textContent = (document.webkitFullscreenElement) ? '✕ Exit' : '⛶ Full Screen';
           });
+
+          // ═══ PIN LOCK ═══
+          (function(){
+            var PIN = '3159';
+            var COOKIE_NAME = 'cc_auth';
+            var SIX_MONTHS = 180 * 24 * 60 * 60 * 1000;
+
+            function getCookie(name){
+              var m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));
+              return m ? m[2] : null;
+            }
+            function setCookie(name, val, ms){
+              var d = new Date(Date.now()+ms);
+              document.cookie = name+'='+val+';expires='+d.toUTCString()+';path=/;SameSite=Lax';
+            }
+
+            if(getCookie(COOKIE_NAME) === 'ok') return; // jau autorizēts
+
+            // Slēpjam saturu
+            document.body.style.visibility = 'hidden';
+
+            window.addEventListener('DOMContentLoaded', function(){
+              document.body.style.visibility = 'hidden';
+              var overlay = document.createElement('div');
+              overlay.id = 'pin-overlay';
+              overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0a0a0a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,sans-serif';
+              overlay.innerHTML = '<div style="text-align:center">'
+                +'<div style="font-size:48px;margin-bottom:8px">🔒</div>'
+                +'<div style="font-size:20px;color:#f5f5f7;font-weight:700;margin-bottom:4px">Command Center</div>'
+                +'<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px">Ievadi PIN kodu</div>'
+                +'<input id="pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" style="font-size:36px;text-align:center;width:160px;padding:12px;background:#1c1c1e;border:2px solid rgba(255,255,255,0.15);border-radius:12px;color:#f5f5f7;outline:none;letter-spacing:12px" />'
+                +'<div id="pin-error" style="font-size:13px;color:#ff375f;margin-top:12px;height:20px"></div>'
+                +'</div>';
+              document.body.appendChild(overlay);
+
+              var inp = document.getElementById('pin-input');
+              inp.focus();
+              inp.addEventListener('input', function(){
+                if(inp.value.length === 4){
+                  if(inp.value === PIN){
+                    setCookie(COOKIE_NAME, 'ok', SIX_MONTHS);
+                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 0.3s';
+                    setTimeout(function(){
+                      overlay.remove();
+                      document.body.style.visibility = 'visible';
+                    }, 300);
+                  } else {
+                    document.getElementById('pin-error').textContent = 'Nepareizs PIN kods';
+                    inp.value = '';
+                    inp.style.borderColor = '#ff375f';
+                    setTimeout(function(){ inp.style.borderColor = 'rgba(255,255,255,0.15)'; }, 1000);
+                  }
+                }
+              });
+            });
+          })();
         `}} />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', background: '#0a0a0a' }}>
