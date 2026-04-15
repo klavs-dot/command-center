@@ -74,12 +74,12 @@ export default async function DashboardPage() {
 
   // Nākamo 7 dienu filtrs
   const now = new Date();
-  const in7days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const in30days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const todayStr = now.toISOString().split('T')[0];
 
   for (const t of upcoming) {
-    // Rādām tikai uzdevumus nākamajās 7 dienās vai bez datuma vai overdue
-    const inRange = !t.dueDate || t.dueDate <= in7days;
+    // Rādām tikai uzdevumus nākamajās 30 dienās vai bez datuma vai overdue
+    const inRange = !t.dueDate || t.dueDate <= in30days;
     if (!inRange) continue;
 
     const owner = matchPerson(t.person);
@@ -210,7 +210,7 @@ export default async function DashboardPage() {
           borderLeft: `1px solid ${C.border}`, padding: `${5*S}px ${5*S}px`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
-          <ColHeader t="Uzņemtie · 7 dienas" emoji="👥" c={C.blue} s={S} count={Object.values(personTasks).flat().length} />
+          <ColHeader t="Uzņemtie · 30 dienas" emoji="👥" c={C.blue} s={S} count={Object.values(personTasks).flat().length} />
           <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: `${4*S}px` }}>
             {sortedPeople.map(([name, tasks]) => {
               const color = PEOPLE[name];
