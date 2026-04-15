@@ -63,13 +63,35 @@ export default async function DashboardPage() {
   const personTasks = {};
   for (const name of Object.keys(PEOPLE)) personTasks[name] = [];
 
-  for (const t of upcoming) {
-    const p = t.person || '—';
+  function matchPerson(personName) {
+    const p = (personName || '').toLowerCase();
     for (const name of Object.keys(PEOPLE)) {
       const match = name.toLowerCase().replace('.', '');
-      if (p.toLowerCase().startsWith(match) || p.toLowerCase().includes(match)) {
-        personTasks[name].push(t);
-        break;
+      if (p.startsWith(match) || p.includes(match)) return name;
+    }
+    return null;
+  }
+
+  for (const t of upcoming) {
+    const owner = matchPerson(t.person);
+    if (owner) {
+      personTasks[owner].push(t);
+    }
+    // Subtaski kas pieder citām personām — pievienojam kā atsevišķu ierakstu
+    for (const sub of (t.subtasks || [])) {
+      const subOwner = matchPerson(sub.assignee);
+      if (subOwner && subOwner !== owner) {
+        // Pievienojam parent task ar šo vienu subtask pie citas personas
+        if (!personTasks[subOwner].find(x => x._parentId === t.task && x._subName === sub.name)) {
+          personTasks[subOwner].push({
+            ...t,
+            _isSubRef: true,
+            _parentId: t.task,
+            _subName: sub.name,
+            _subDueDate: sub.dueDate,
+            subtasks: [sub],
+          });
+        }
       }
     }
   }
@@ -198,16 +220,32 @@ export default async function DashboardPage() {
                   </div>
                   {tasks.length === 0 && <div style={{ fontSize: 4.5*S, color: C.text3, paddingLeft: 10*S }}>—</div>}
                   {tasks.map((t, i) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', gap: 2*S,
-                      paddingLeft: 10*S, fontSize: 5*S, padding: `${1*S}px 0 ${1*S}px ${10*S}px`,
-                    }}>
-                      <span style={{ color: daysColor(t.dueDate), fontSize: 4*S }}>●</span>
-                      <span style={{ color: C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.task}</span>
-                      <Pill t={t.company} c={t.companyColor} s={S} />
-                      <span style={{ color: daysColor(t.dueDate), fontSize: 4.5*S, fontWeight: 600, minWidth: 10*S, textAlign: 'right', flexShrink: 0 }}>
-                        {daysUntilStr(t.dueDate)}
-                      </span>
+                    <div key={i}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 2*S,
+                        paddingLeft: 10*S, fontSize: 5*S, padding: `${1*S}px 0 ${1*S}px ${10*S}px`,
+                      }}>
+                        <span style={{ color: daysColor(t.dueDate), fontSize: 4*S }}>●</span>
+                        <span style={{ color: t._isSubRef ? C.text3 : C.text, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontStyle: t._isSubRef ? 'italic' : 'normal' }}>{t.task}</span>
+                        <Pill t={t.company} c={t.companyColor} s={S} />
+                        <span style={{ color: daysColor(t.dueDate), fontSize: 4.5*S, fontWeight: 600, minWidth: 10*S, textAlign: 'right', flexShrink: 0 }}>
+                          {daysUntilStr(t.dueDate)}
+                        </span>
+                      </div>
+                      {/* Subtaski */}
+                      {(t.subtasks || []).filter(s => {
+                        const subOwner = matchPerson(s.assignee);
+                        return subOwner === name;
+                      }).map((s, si) => (
+                        <div key={si} style={{
+                          display: 'flex', alignItems: 'center', gap: 2*S,
+                          paddingLeft: 16*S, fontSize: 4.5*S, padding: `${0.5*S}px 0 ${0.5*S}px ${16*S}px`,
+                        }}>
+                          <span style={{ color: C.text3, fontSize: 3.5*S }}>↳</span>
+                          <span style={{ color: C.text2, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</span>
+                          {s.dueDate && <span style={{ color: daysColor(s.dueDate), fontSize: 4*S, fontWeight: 600, flexShrink: 0 }}>{daysUntilStr(s.dueDate)}</span>}
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>

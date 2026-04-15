@@ -40,7 +40,10 @@ export async function GET() {
     });
     d.upcomingTasks = asana.upcoming.map(t => {
       const p = mapProject(t.project);
-      return { person: shortName(t.assignee), task: t.name, company: p.co, companyColor: p.cc, dueDate: t.dueDate, section: t.section };
+      const subtasks = (t.subtasks || []).map(s => ({
+        name: s.name, assignee: shortName(s.assignee), dueDate: s.dueDate,
+      }));
+      return { person: shortName(t.assignee), task: t.name, company: p.co, companyColor: p.cc, dueDate: t.dueDate, section: t.section, subtasks };
     });
     d.events = asana.events.map(t => {
       const p = mapProject(t.project);
