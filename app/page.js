@@ -66,7 +66,7 @@ export default async function DashboardPage() {
   const sortedPeople = Object.entries(personTasks).sort((a, b) => b[1].length - a[1].length);
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", background: C.bg, display: 'flex', flexDirection: 'column' }}>
+    <div className="dash-root" style={{ width: '100%', fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", background: C.bg, display: 'flex', flexDirection: 'column' }}>
 
       {/* ══ TOP BAR ══ */}
       <div className="dash-header" style={{ padding: '12px 35px', background: C.card, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
