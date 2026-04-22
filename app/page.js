@@ -25,7 +25,6 @@ const C = {
 };
 
 const PEOPLE = {
-  'Klāvs': '#0a84ff',
   'Elizabete': '#ff9f0a',
   'Paula': '#bf5af2',
   'Intars': '#30d158',
@@ -149,7 +148,7 @@ export default async function DashboardPage() {
             <span style={{ fontSize: 5*S, color: C.text2 }}>
               Pagājušajā mēnesī <span style={{ color: C.orange, fontWeight: 700 }}>{ms.lastMonthName || '—'}</span> tika izveidoti <span style={{ fontWeight: 700, color: C.text }}>{ms.lastMonthCreated || 0}</span> uzdevumi un <span style={{ fontWeight: 700, color: C.green }}>{ms.lastMonthCompleted || 0}</span> padarīti.
             </span>
-            <span style={{ fontSize: 10*S, color: C.text, fontWeight: 600 }}>
+            <span style={{ fontSize: 7*S, color: C.text, fontWeight: 600 }}>
               Šomēnes mums jau ir <span style={{ fontWeight: 800, color: C.blue }}>{ms.thisMonthCreated || 0}</span> uzdevumi un jau <span style={{ fontWeight: 800, color: C.green }}>{ms.thisMonthCompleted || 0}</span> esam izdarījuši.
             </span>
           </div>
