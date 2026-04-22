@@ -30,6 +30,9 @@ const PEOPLE = {
   'Intars': '#30d158',
 };
 
+// Personas, kuras NEKAD nerādās "Uzņemtie" kolonnā (pat ja kāds tās pievieno PEOPLE sarakstam)
+const EXCLUDE_FROM_UZNEMTIE = ['klāvs', 'klavs', 'klav'];
+
 function daysUntilStr(dateStr) {
   if (!dateStr) return '';
   const d = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
@@ -64,6 +67,8 @@ export default async function DashboardPage() {
 
   function matchPerson(personName) {
     const p = (personName || '').toLowerCase();
+    // Stingri izslēdzam Klāvu (un citus no EXCLUDE saraksta)
+    if (EXCLUDE_FROM_UZNEMTIE.some(ex => p.startsWith(ex) || p.includes(ex))) return null;
     for (const name of Object.keys(PEOPLE)) {
       const match = name.toLowerCase().replace('.', '');
       if (p.startsWith(match) || p.includes(match)) return name;
