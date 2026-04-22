@@ -337,3 +337,4 @@ function ColHeader({ t, emoji, c, s, count }) {
 function Pill({ t, c, s }) {
   return <span style={{ fontSize: 4.5*s, padding: `${0.5*s}px ${4*s}px`, borderRadius: 20*s, fontWeight: 600, background: `${c}18`, color: c, flexShrink: 0 }}>{t}</span>;
 }
+// redeploy Wed Apr 22 20:38:49 UTC 2026
